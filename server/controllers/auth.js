@@ -7,14 +7,46 @@ export const register = async (req, res, next) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return next(new ErrorResponse(errors.array()[0].msg, 400));
+            // Return the first validation error message
+            return res.status(400).json({
+                success: false,
+                message: errors.array()[0].msg
+            });
         }
 
         const { fullName, email, password } = req.body;
 
+        // Check for missing fields
+        if (!fullName || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'All fields (fullName, email, password) are required.'
+            });
+        }
+
+        // Check for valid email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a valid email address.'
+            });
+        }
+
+        // Check for password strength
+        if (password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password must be at least 6 characters.'
+            });
+        }
+
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return next(new ErrorResponse('Email already registered', 400));
+            return res.status(400).json({
+                success: false,
+                message: 'Email already registered.'
+            });
         }
 
         const user = await User.create({
@@ -34,19 +66,37 @@ export const login = async (req, res, next) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return next(new ErrorResponse(errors.array()[0].msg, 400));
+            // Return the first validation error message
+            return res.status(400).json({
+                success: false,
+                message: errors.array()[0].msg
+            });
         }
 
         const { email, password } = req.body;
 
+        // Check for missing fields
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email and password are required.'
+            });
+        }
+
         const user = await User.findOne({ email }).select('+password');
         if (!user) {
-            return next(new ErrorResponse('Invalid credentials', 401));
+            return res.status(401).json({
+                success: false,
+                message: 'User not found. Please register first.'
+            });
         }
 
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
-            return next(new ErrorResponse('Invalid credentials', 401));
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid password.'
+            });
         }
 
         sendTokenResponse(user, 200, res);
