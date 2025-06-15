@@ -6,7 +6,7 @@ import { authLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
-console.log('Setting up auth routes...');
+
 
 // Input validation rules
 const registerValidation = [
@@ -25,6 +25,6 @@ router.post('/register', authLimiter, registerValidation, register);
 router.post('/login', authLimiter, loginValidation, login);
 router.get('/me', protect, getMe);
 
-console.log('Auth routes configured successfully');
+
 
 export default router; 
