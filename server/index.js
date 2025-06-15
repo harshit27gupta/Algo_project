@@ -4,9 +4,9 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
 import errorHandler from './middleware/error.js';
 import authRoutes from './routes/auth.js';
+import { apiLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
 
@@ -22,12 +22,8 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Prevent brute force attacks
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100
-});
-app.use(limiter);
+// Apply global rate limiting middleware
+app.use(apiLimiter);
 
 // Debug log before mounting routes
 console.log('Mounting auth routes...');
