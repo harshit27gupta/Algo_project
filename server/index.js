@@ -10,6 +10,12 @@ import authRoutes from './routes/auth.js';
 
 const app = express();
 
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
+
 // Essential security middleware
 app.use(helmet());
 app.use(cors());
@@ -23,8 +29,14 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// Debug log before mounting routes
+console.log('Mounting auth routes...');
+
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/v1/auth', authRoutes);
+
+// Debug log after mounting routes
+console.log('Routes mounted successfully');
 
 // Error handling middleware (must be after routes)
 app.use(errorHandler);
@@ -37,4 +49,8 @@ mongoose.connect(process.env.MONGODB_URI)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    console.log('Available routes:');
+    console.log('- POST /api/v1/auth/register');
+    console.log('- POST /api/v1/auth/login');
+    console.log('- GET /api/v1/auth/me');
 }); 

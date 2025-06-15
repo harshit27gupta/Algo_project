@@ -2,43 +2,29 @@ import express from 'express';
 import { body } from 'express-validator';
 import { register, login, getMe } from '../controllers/auth.js';
 import { protect } from '../middleware/auth.js';
+import { authLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
+console.log('Setting up auth routes...');
+
 // Input validation rules
 const registerValidation = [
-    body('fullName')
-        .trim()
-        .isLength({ min: 2, max: 50 })
-        .withMessage('Name must be between 2 and 50 characters'),
-    body('email')
-        .isEmail()
-        .withMessage('Please provide a valid email')
-        .normalizeEmail(),
-    body('password')
-        .isLength({ min: 8 })
-        .withMessage('Password must be at least 8 characters long')
-        .matches(/\d/)
-        .withMessage('Password must contain a number')
-        .matches(/[A-Z]/)
-        .withMessage('Password must contain an uppercase letter')
-        .matches(/[a-z]/)
-        .withMessage('Password must contain a lowercase letter')
+    body('fullName').notEmpty().withMessage('Name is required'),
+    body('email').isEmail().withMessage('Please include a valid email'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ];
 
 const loginValidation = [
-    body('email')
-        .isEmail()
-        .withMessage('Please provide a valid email')
-        .normalizeEmail(),
-    body('password')
-        .exists()
-        .withMessage('Password is required')
+    body('email').isEmail().withMessage('Please include a valid email'),
+    body('password').exists().withMessage('Password is required')
 ];
 
-// Auth routes
-router.post('/register', registerValidation, register);
-router.post('/login', loginValidation, login);
+// Auth routes with rate limiting
+router.post('/register', authLimiter, registerValidation, register);
+router.post('/login', authLimiter, loginValidation, login);
 router.get('/me', protect, getMe);
+
+console.log('Auth routes configured successfully');
 
 export default router; 
