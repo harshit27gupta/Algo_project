@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { register, login, getMe } from '../controllers/auth.js';
+import { register, login, getMe, googleLogin } from '../controllers/auth.js';
 import { protect } from '../middleware/auth.js';
 import { authLimiter } from '../middleware/rateLimiter.js';
 
@@ -24,6 +24,7 @@ const loginValidation = [
 router.post('/register', authLimiter, registerValidation, register);
 router.post('/login', authLimiter, loginValidation, login);
 router.get('/me', protect, getMe);
+router.post('/google',authLimiter,googleLogin);
 
 
 

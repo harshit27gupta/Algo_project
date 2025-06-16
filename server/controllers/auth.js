@@ -1,6 +1,9 @@
 import User from '../models/User.js';
 import ErrorResponse from '../utils/errorResponse.js';
 import { validationResult } from 'express-validator';
+import { OAuth2Client } from 'google-auth-library';
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Register new user
 export const register = async (req, res, next) => {
@@ -132,4 +135,35 @@ const sendTokenResponse = (user, statusCode, res) => {
             role: user.role
         }
     });
+};
+
+export const googleLogin = async (req, res, next) => {
+    try {
+        const { credential } = req.body;
+        if (!credential) {
+            return res.status(400).json({ success: false, message: 'No credential provided.' });
+        }
+        // Verify Google token
+        const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        const email = payload.email;
+        const fullName = payload.name;
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Google account has no email.' });
+        }
+        let user = await User.findOne({ email });
+        if (!user) {
+            user = await User.create({
+                fullName,
+                email,
+                password: Math.random().toString(36).slice(-8) // random password
+            });
+        }
+        sendTokenResponse(user, 200, res);
+    } catch (err) {
+        next(err);
+    }
 }; 
