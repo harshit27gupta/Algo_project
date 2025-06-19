@@ -50,6 +50,9 @@ export const protect = async (req, res, next) => {
     }
 };
 
+// Alias for protect function to maintain compatibility
+export const authenticateUser = protect;
+
 // Grant access to specific roles
 export const authorize = (...roles) => {
     return (req, res, next) => {
@@ -61,4 +64,7 @@ export const authorize = (...roles) => {
         }
         next();
     };
-}; 
+};
+
+// Alias for authorize function to maintain compatibility
+export const authorizeRoles = authorize; 

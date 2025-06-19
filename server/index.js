@@ -6,11 +6,11 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import errorHandler from './middleware/error.js';
 import authRoutes from './routes/auth.js';
+import problemRoutes from './routes/problem.js';
+import userRoutes from './routes/user.js';
 import { apiLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
-
-
 
 // Essential security middleware
 app.use(helmet());
@@ -21,11 +21,10 @@ app.use(morgan('dev'));
 // Apply global rate limiting middleware
 app.use(apiLimiter);
 
-
 // Routes
 app.use('/api/v1/auth', authRoutes);
-
-
+app.use('/api/v1/problems', problemRoutes);
+app.use('/api/v1/user', userRoutes);
 
 // Error handling middleware (must be after routes)
 app.use(errorHandler);

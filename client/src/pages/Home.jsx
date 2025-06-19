@@ -1,17 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaSearch, FaFilter } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
 import './Home.css';
 import { toast } from 'react-toastify';
+import { getAllProblems } from '../services/api';
 
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState({
-    difficulty: 'all',
-    category: 'all',
-    status: 'all'
+    difficulty: [],
+    category: [],
+    status: [],
+    rating: []
   });
   const [user, setUser] = useState(null);
+  const [problems, setProblems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
   const navigate = useNavigate();
   const [logoutLoading, setLogoutLoading] = useState(false);
 
@@ -23,6 +29,24 @@ const Home = () => {
       setUser(null);
     }
   }, []);
+
+  useEffect(() => {
+    fetchProblems();
+  }, []);
+
+  const fetchProblems = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getAllProblems();
+      setProblems(response.data || []);
+    } catch (err) {
+      setError(err.message);
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     setLogoutLoading(true);
@@ -38,33 +62,101 @@ const Home = () => {
     }, 1500);
   };
 
-  // Mock data for problems (will be replaced with API data)
-  const problems = [
-    {
-      id: 1,
-      title: "Two Sum",
-      difficulty: "Easy",
-      category: "Array",
-      acceptanceRate: "85%",
-      status: "solved"
-    },
-    {
-      id: 2,
-      title: "Add Two Numbers",
-      difficulty: "Medium",
-      category: "Linked List",
-      acceptanceRate: "65%",
-      status: "attempted"
-    },
-    {
-      id: 3,
-      title: "Longest Substring Without Repeating Characters",
-      difficulty: "Medium",
-      category: "String",
-      acceptanceRate: "45%",
-      status: "unsolved"
-    }
+  // Get problem status for current user
+  const getProblemStatus = (problem) => {
+    // Use the userStatus from the backend response
+    return problem.userStatus || 'unsolved';
+  };
+
+  // Filter problems based on search query and filters
+  const filteredProblems = problems.filter(problem => {
+    // Search filter
+    const matchesSearch = problem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         problem.description.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Difficulty filter (multiple selection - OR logic)
+    const matchesDifficulty = filters.difficulty.length === 0 || 
+                             filters.difficulty.includes(problem.difficulty.toLowerCase());
+    
+    // Category filter (multiple selection - OR logic)
+    const matchesCategory = filters.category.length === 0 || 
+                           problem.categories.some(cat => 
+                             filters.category.includes(cat.toLowerCase().replace(' ', '-'))
+                           );
+    
+    // Status filter (multiple selection - OR logic)
+    const problemStatus = getProblemStatus(problem);
+    const matchesStatus = filters.status.length === 0 || 
+                         filters.status.includes(problemStatus);
+    
+    // Rating filter (multiple selection - OR logic)
+    const matchesRating = filters.rating.length === 0 || 
+                         filters.rating.some(ratingRange => {
+                           const [min, max] = ratingRange.split('-').map(Number);
+                           return problem.rating >= min && problem.rating <= max;
+                         });
+    
+    return matchesSearch && matchesDifficulty && matchesCategory && matchesStatus && matchesRating;
+  });
+
+  // Get unique categories from problems
+  const uniqueCategories = [...new Set(problems.flatMap(problem => problem.categories))];
+
+  // Rating ranges for filtering
+  const ratingRanges = [
+    { label: '1000-1299', value: '1000-1299' },
+    { label: '1300-1599', value: '1300-1599' },
+    { label: '1600-1899', value: '1600-1899' },
+    { label: '1900-2199', value: '1900-2199' },
+    { label: '2200-2499', value: '2200-2499' },
+    { label: '2500+', value: '2500-9999' }
   ];
+
+  // Function to get rating color class
+  const getRatingColorClass = (rating) => {
+    if (rating >= 2500) return 'master';
+    if (rating >= 2200) return 'expert';
+    if (rating >= 1900) return 'advanced';
+    if (rating >= 1600) return 'intermediate';
+    if (rating >= 1300) return 'beginner-plus';
+    if (rating >= 1000) return 'novice';
+    return 'unrated';
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prev => {
+      const newFilters = { ...prev };
+      
+      if (filterType === 'difficulty' || filterType === 'category' || filterType === 'status' || filterType === 'rating') {
+        if (newFilters[filterType].includes(value)) {
+          // Remove if already selected
+          newFilters[filterType] = newFilters[filterType].filter(item => item !== value);
+        } else {
+          // Add if not selected
+          newFilters[filterType] = [...newFilters[filterType], value];
+        }
+      }
+      
+      return newFilters;
+    });
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setFilters({
+      difficulty: [],
+      category: [],
+      status: [],
+      rating: []
+    });
+    setSearchQuery('');
+  };
+
+  // Get active filter count
+  const getActiveFilterCount = () => {
+    return filters.difficulty.length + filters.category.length + filters.status.length + filters.rating.length + (searchQuery ? 1 : 0);
+  };
 
   return (
     <div className="home-container">
@@ -75,7 +167,9 @@ const Home = () => {
             {user ? (
               <>
                 <span className="user-info">
-                  <span className="user-name-full">{user.fullName.split(' ')[0]}</span>
+                  <Link to="/profile" className="user-name-full">
+                    {user.fullName.split(' ')[0]}
+                  </Link>
                 </span>
                 <button className="auth-button primary" onClick={handleLogout} disabled={logoutLoading} style={{marginLeft: 0}}>
                   {logoutLoading ? (<><span>Logging out</span></>) : 'Logout'}
@@ -103,61 +197,155 @@ const Home = () => {
             />
           </div>
 
-          <div className="filters">
-            <select
-              value={filters.difficulty}
-              onChange={(e) => setFilters(prev => ({ ...prev, difficulty: e.target.value }))}
+          <div className="filter-controls">
+            <button 
+              className="filter-toggle"
+              onClick={() => setShowFilters(!showFilters)}
             >
-              <option value="all">All Difficulties</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-
-            <select
-              value={filters.category}
-              onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-            >
-              <option value="all">All Categories</option>
-              <option value="array">Array</option>
-              <option value="string">String</option>
-              <option value="linked-list">Linked List</option>
-              <option value="tree">Tree</option>
-              <option value="graph">Graph</option>
-            </select>
-
-            <select
-              value={filters.status}
-              onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-            >
-              <option value="all">All Status</option>
-              <option value="solved">Solved</option>
-              <option value="attempted">Attempted</option>
-              <option value="unsolved">Unsolved</option>
-            </select>
+              <FaFilter />
+              Filters
+              {getActiveFilterCount() > 0 && (
+                <span className="filter-badge">{getActiveFilterCount()}</span>
+              )}
+            </button>
+            
+            {getActiveFilterCount() > 0 && (
+              <button className="clear-filters" onClick={clearAllFilters}>
+                <FaTimes />
+                Clear All
+              </button>
+            )}
           </div>
         </div>
 
+        {showFilters && (
+          <div className="filters-panel">
+            <div className="filter-group">
+              <h4>Difficulty</h4>
+              <div className="filter-options">
+                {['easy', 'medium', 'hard'].map(difficulty => (
+                  <label key={difficulty} className="filter-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={filters.difficulty.includes(difficulty)}
+                      onChange={() => handleFilterChange('difficulty', difficulty)}
+                    />
+                    <span className={`difficulty-badge ${difficulty}`}>
+                      {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="filter-group">
+              <h4>Categories</h4>
+              <div className="filter-options">
+                {uniqueCategories.map(category => (
+                  <label key={category} className="filter-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={filters.category.includes(category.toLowerCase().replace(' ', '-'))}
+                      onChange={() => handleFilterChange('category', category.toLowerCase().replace(' ', '-'))}
+                    />
+                    <span className="category-badge">{category}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="filter-group">
+              <h4>Status</h4>
+              <div className="filter-options">
+                {['solved', 'attempted', 'unsolved'].map(status => (
+                  <label key={status} className="filter-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={filters.status.includes(status)}
+                      onChange={() => handleFilterChange('status', status)}
+                    />
+                    <span className={`status-badge ${status}`}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="filter-group">
+              <h4>Rating Range</h4>
+              <div className="filter-options">
+                {ratingRanges.map(range => (
+                  <label key={range.value} className="filter-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={filters.rating.includes(range.value)}
+                      onChange={() => handleFilterChange('rating', range.value)}
+                    />
+                    <span className="rating-badge">{range.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="problems-list">
-          {problems.map(problem => (
-            <Link to={`/problem/${problem.id}`} key={problem.id} className="problem-card">
-              <div className="problem-info">
-                <h3>{problem.title}</h3>
-                <div className="problem-meta">
-                  <span className={`difficulty ${problem.difficulty.toLowerCase()}`}>
-                    {problem.difficulty}
-                  </span>
-                  <span className="category">{problem.category}</span>
-                  <span className="acceptance-rate">
-                    Acceptance Rate: {problem.acceptanceRate}
-                  </span>
-                </div>
+          {loading ? (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>Loading problems...</p>
+            </div>
+          ) : error ? (
+            <div className="error-container">
+              <p>Error: {error}</p>
+              <button onClick={fetchProblems} className="retry-button">
+                Try Again
+              </button>
+            </div>
+          ) : filteredProblems.length === 0 ? (
+            <div className="no-problems">
+              <p>No problems found matching your filters.</p>
+              {getActiveFilterCount() > 0 && (
+                <button onClick={clearAllFilters} className="clear-filters-btn">
+                  Clear filters to see all problems
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="results-info">
+                <p>Showing {filteredProblems.length} of {problems.length} problems</p>
               </div>
-              <div className={`status ${problem.status}`}>
-                {problem.status.charAt(0).toUpperCase() + problem.status.slice(1)}
-              </div>
-            </Link>
-          ))}
+              {filteredProblems.map(problem => (
+                <Link to={`/problem/${problem._id}`} key={problem._id} className="problem-card">
+                  <div className="problem-info">
+                    <h3>{problem.title}</h3>
+                    <div className="problem-meta">
+                      <span className={`difficulty ${problem.difficulty.toLowerCase()}`}>
+                        {problem.difficulty}
+                      </span>
+                      <span className="category">{problem.categories.join(', ')}</span>
+                      <span className="acceptance-rate">
+                        Acceptance Rate: {problem.totalSubmissions > 0 
+                          ? `${Math.round((problem.successfulSubmissions / problem.totalSubmissions) * 100)}%`
+                          : '0%'
+                        }
+                      </span>
+                      {problem.rating > 0 && (
+                        <span className={`rating ${getRatingColorClass(problem.rating)}`}>
+                          Rating: {problem.rating}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className={`status ${getProblemStatus(problem)}`}>
+                    {getProblemStatus(problem).charAt(0).toUpperCase() + getProblemStatus(problem).slice(1)}
+                  </div>
+                </Link>
+              ))}
+            </>
+          )}
         </div>
       </main>
     </div>
