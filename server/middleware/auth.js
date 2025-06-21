@@ -1,53 +1,46 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-// Middleware to protect routes - requires valid JWT token
-export const protect = async (req, res, next) => {
-    try {
-        let token;
+// Middleware to add user to request if authenticated, and adds auth error info if any
+export const deserializeUser = async (req, res, next) => {
+    let token;
 
-        // Check for token in headers
-        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-            token = req.headers.authorization.split(' ')[1];
-        }
-
-        if (!token) {
-            return res.status(401).json({
-                success: false,
-                message: 'Not authorized to access this route'
-            });
-        }
-
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
-            // Verify token
+            token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-            // Get user from token
             req.user = await User.findById(decoded.id);
-            
             if (!req.user) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'User not found'
-                });
+                req.authError = { type: 'UserNotFound' };
             }
-
-            next();
         } catch (err) {
             if (err.name === 'TokenExpiredError') {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Token expired'
-                });
+                req.authError = { type: 'TokenExpiredError' };
+            } else {
+                req.authError = { type: 'InvalidToken' };
             }
-            return res.status(401).json({
-                success: false,
-                message: 'Not authorized to access this route'
-            });
         }
-    } catch (err) {
-        next(err);
     }
+    next();
+};
+
+// Middleware to protect routes - requires valid JWT token
+export const protect = (req, res, next) => {
+    if (req.user) {
+        return next();
+    }
+
+    if (req.authError?.type === 'TokenExpiredError') {
+        return res.status(401).json({
+            success: false,
+            message: 'Your session has expired. Please log in again.'
+        });
+    }
+
+    return res.status(401).json({
+        success: false,
+        message: 'You must be logged in to perform this action. Please log in or sign up.'
+    });
 };
 
 // Alias for protect function to maintain compatibility
@@ -59,7 +52,7 @@ export const authorize = (...roles) => {
         if (!roles.includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
-                message: `User role ${req.user.role} is not authorized to access this route`
+                message: `Your user role (${req.user.role}) is not authorized to perform this action.`
             });
         }
         next();

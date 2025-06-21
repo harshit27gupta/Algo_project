@@ -30,8 +30,7 @@ const testProblems = [
                 output: "[0,1]"
             }
         ],
-        isPublished: true,
-        isPremium: false
+        isPublished: true
     },
     {
         title: "Add Two Numbers",
@@ -54,8 +53,7 @@ const testProblems = [
                 output: "[8,9,9,9,0,0,0,1]"
             }
         ],
-        isPublished: true,
-        isPremium: false
+        isPublished: true
     },
     {
         title: "Longest Substring Without Repeating Characters",
@@ -83,8 +81,7 @@ const testProblems = [
                 output: "3"
             }
         ],
-        isPublished: true,
-        isPremium: true
+        isPublished: true
     },
     {
         title: "Binary Tree Level Order Traversal",
@@ -107,8 +104,7 @@ const testProblems = [
                 output: "[[1]]"
             }
         ],
-        isPublished: true,
-        isPremium: false
+        isPublished: true
     },
     {
         title: "Merge K Sorted Lists",
@@ -131,8 +127,7 @@ const testProblems = [
                 output: "[]"
             }
         ],
-        isPublished: true,
-        isPremium: true
+            isPublished: true
     }
 ];
 

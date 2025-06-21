@@ -6,8 +6,8 @@ import mongoose from 'mongoose';
 
 // Create a new problem
 export const createProblem = async (req, res) => {
-    const { title, description, difficulty, categories, timeLimit, memoryLimit, publicTestCases, hiddenTestCases, isPremium } = req.body;
-
+    const { title, description, difficulty, categories, timeLimit, memoryLimit, publicTestCases, hiddenTestCases } = req.body;
+    // console.log(req.body);
     // Check if problem with same title exists
     const existingProblem = await Problem.findOne({ title });
     if (existingProblem) {
@@ -28,7 +28,6 @@ export const createProblem = async (req, res) => {
         memoryLimit,
         publicTestCases,
         hiddenTestCases,
-        isPremium,
         author: req.user.id
     });
 
@@ -170,11 +169,17 @@ export const getProblem = async (req, res) => {
         throw new ErrorResponse(`Problem with id ${id} not found`, StatusCodes.NOT_FOUND);
     }
 
-    // If problem is not published and user is not the author or admin
-    if (!problem.isPublished && 
-        problem.author._id.toString() !== req.user.id && 
-        req.user.role !== 'admin') {
-        throw new ErrorResponse('Not authorized to access this problem', StatusCodes.UNAUTHORIZED);
+    // If problem is not published, check if user is authorized to access it
+    if (!problem.isPublished) {
+        // If user is not authenticated, deny access
+        if (!req.user) {
+            throw new ErrorResponse('You must be logged in to view this unpublished problem.', StatusCodes.UNAUTHORIZED);
+        }
+        
+        // If user is not the author or admin, deny access
+        if (problem.author._id.toString() !== req.user.id && req.user.role !== 'admin') {
+            throw new ErrorResponse('You do not have permission to view this problem.', StatusCodes.FORBIDDEN);
+        }
     }
 
     res.status(StatusCodes.OK).json({
@@ -195,7 +200,6 @@ export const updateProblem = async (req, res) => {
         memoryLimit, 
         publicTestCases, 
         hiddenTestCases, 
-        isPremium,
         isPublished 
     } = req.body;
 
@@ -207,7 +211,7 @@ export const updateProblem = async (req, res) => {
 
     // Check if user is author or admin
     if (problem.author.toString() !== req.user.id && req.user.role !== 'admin') {
-        throw new ErrorResponse('Not authorized to update this problem', StatusCodes.UNAUTHORIZED);
+        throw new ErrorResponse('You do not have permission to update this problem.', StatusCodes.FORBIDDEN);
     }
 
     // If title is being updated, check for duplicates
@@ -235,7 +239,6 @@ export const updateProblem = async (req, res) => {
             memoryLimit,
             publicTestCases,
             hiddenTestCases,
-            isPremium,
             isPublished
         },
         { new: true, runValidators: true }
@@ -259,7 +262,7 @@ export const deleteProblem = async (req, res) => {
 
     // Check if user is author or admin
     if (problem.author.toString() !== req.user.id && req.user.role !== 'admin') {
-        throw new ErrorResponse('Not authorized to delete this problem', StatusCodes.UNAUTHORIZED);
+        throw new ErrorResponse('You do not have permission to delete this problem.', StatusCodes.FORBIDDEN);
     }
 
     await problem.deleteOne();
@@ -267,6 +270,40 @@ export const deleteProblem = async (req, res) => {
     res.status(StatusCodes.OK).json({
         success: true,
         data: {}
+    });
+};
+
+// Run code against public test cases
+export const runCode = async (req, res) => {
+    const { id } = req.params;
+    const { code, language } = req.body;
+
+    if (!code || !language) {
+        throw new ErrorResponse('Code and language are required', StatusCodes.BAD_REQUEST);
+    }
+
+    const problem = await Problem.findById(id);
+
+    if (!problem) {
+        throw new ErrorResponse(`Problem with id ${id} not found`, StatusCodes.NOT_FOUND);
+    }
+    
+    // TODO: Implement actual code execution against public test cases.
+    // For now, simulate a random result for each public test case.
+    const results = problem.publicTestCases.map((testCase, index) => {
+        const isCorrect = Math.random() > 0.3; // 70% chance of being correct
+        return {
+            id: index,
+            input: testCase.input,
+            expected: testCase.output,
+            output: isCorrect ? testCase.output : `Wrong output for test case ${index + 1}`,
+            status: isCorrect ? 'passed' : 'failed'
+        };
+    });
+
+    res.status(StatusCodes.OK).json({
+        success: true,
+        data: results
     });
 };
 

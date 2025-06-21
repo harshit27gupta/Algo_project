@@ -7,7 +7,8 @@ import {
     deleteProblem,
     submitSolution,
     getProblemStats,
-    getUserProblemStatus
+    getUserProblemStatus,
+    runCode
 } from '../controllers/problem.js';
 import { authenticateUser, authorizeRoles } from '../middleware/auth.js';
 
@@ -22,6 +23,7 @@ router.get('/:id', getProblem);
 router.use(authenticateUser);
 
 // Problem submission and status
+router.post('/:id/run', runCode);
 router.post('/:id/submit', submitSolution);
 router.get('/:problemId/status', getUserProblemStatus);
 

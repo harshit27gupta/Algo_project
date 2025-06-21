@@ -5,6 +5,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import errorHandler from './middleware/error.js';
+import { deserializeUser } from './middleware/auth.js';
 import authRoutes from './routes/auth.js';
 import problemRoutes from './routes/problem.js';
 import userRoutes from './routes/user.js';
@@ -17,6 +18,9 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
+
+// Deserialize user from token if available on any route
+app.use(deserializeUser);
 
 // Apply global rate limiting middleware
 app.use(apiLimiter);

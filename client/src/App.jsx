@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
+import Problem from './pages/Problem';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ForgotPassword from './components/auth/ForgotPassword';
@@ -17,7 +18,7 @@ function App() {
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/register" element={<Register />} />
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
-          <Route path="/problem/:id" element={<div>Problem Page (Coming Soon)</div>} />
+          <Route path="/problem/:id" element={<Problem />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
       </Router>

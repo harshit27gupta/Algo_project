@@ -181,3 +181,31 @@ export const getSolvedProblems = async (page = 1, limit = 10) => {
     );
   }
 };
+
+// Get single problem by ID
+export const getProblem = async (problemId) => {
+  try {
+    const res = await axios.get(`${API_BASE}/problems/${problemId}`);
+    return res.data;
+  } catch (err) {
+    throw new Error(
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      'Failed to fetch problem. Please try again.'
+    );
+  }
+};
+
+export const runCode = async (problemId, code, language) => {
+  try {
+    const authInstance = createAuthInstance();
+    const res = await authInstance.post(`/problems/${problemId}/run`, { code, language });
+    return res.data;
+  } catch (err) {
+    throw new Error(
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      'Failed to run code. Please try again.'
+    );
+  }
+};
