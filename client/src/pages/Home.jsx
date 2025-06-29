@@ -168,7 +168,7 @@ const Home = () => {
               <>
                 <span className="user-info">
                   <Link to="/profile" className="user-name-full">
-                    {user.fullName.split(' ')[0]}
+                    {(user?.fullName || '').split(' ')[0]}
                   </Link>
                 </span>
                 <button className="auth-button primary" onClick={handleLogout} disabled={logoutLoading} style={{marginLeft: 0}}>

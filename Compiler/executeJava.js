@@ -8,13 +8,17 @@ if (!fs.existsSync(outputPath)) {
     fs.mkdirSync(outputPath, { recursive: true });
 }
 
-const executeJava = (filePath) => {
+const executeJava = (filePath, inputFilePath = null) => {
     const jobId = path.basename(filePath, '.java');
     const dir = path.dirname(filePath);
     const classFile = path.join(dir, `${jobId}.class`);
 
     return new Promise((resolve, reject) => {
-        exec(`javac "${filePath}" && java -cp "${dir}" ${jobId}`, (error, stdout, stderr) => {
+        let runCmd = `javac "${filePath}" && java -cp "${dir}" ${jobId}`;
+        if (inputFilePath) {
+            runCmd = `javac "${filePath}" && java -cp "${dir}" ${jobId} < "${inputFilePath}"`;
+        }
+        exec(runCmd, (error, stdout, stderr) => {
             const cleanStdout = (stdout || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
             const cleanStderr = (stderr || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
 

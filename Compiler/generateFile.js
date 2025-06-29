@@ -22,4 +22,17 @@ const generateFile = (language, code) => {
     fs.writeFileSync(filePath, code);
     return filePath;
 }
-export default generateFile;
+
+// Add this function to generate an input file
+function generateInputFile(input) {
+    const inputDir = path.join(__dirname, "inputs");
+    if (!fs.existsSync(inputDir)) {
+        fs.mkdirSync(inputDir, { recursive: true });
+    }
+    const fileName = `${uuid()}.txt`;
+    const filePath = path.join(inputDir, fileName);
+    fs.writeFileSync(filePath, input);
+    return filePath;
+}
+
+export { generateFile, generateInputFile };

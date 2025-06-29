@@ -23,6 +23,7 @@ import {
 import { toast } from 'react-toastify';
 import { getProblem, submitSolution, runCode } from '../services/api';
 import './Problem.css';
+import CodeEditor from '../components/CodeEditor';
 
 const Problem = () => {
   const { id } = useParams();
@@ -494,13 +495,7 @@ char* solution(char* input) {
           </div>
 
           <div className="code-editor">
-            <textarea
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              placeholder="Write your solution here..."
-              className="code-textarea"
-              spellCheck="false"
-            />
+            <CodeEditor language={language === 'cpp' ? 'cpp' : language} code={code} onChange={setCode} />
           </div>
 
           <div className="editor-footer">

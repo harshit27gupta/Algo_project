@@ -1,9 +1,10 @@
 import express from 'express';
-import generateFile from './generateFile.js';
+import { generateFile, generateInputFile } from './generateFile.js';
 import executeCpp from './executeCpp.js';
 import executeC from './executeC.js';
 import executeJava from './executeJava.js';
 import sanitizeCode from './sanitizeCode.js';
+import fs from 'fs';
 
 const app = express();
 app.use(express.json());
@@ -13,7 +14,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/compile', async (req, res) => {
-  let { language, code } = req.body;
+  let { language, code, input } = req.body;
 
   if (!language) {
     return res.status(400).json({ error: 'Please provide a language.' });
@@ -25,21 +26,30 @@ app.post('/compile', async (req, res) => {
   code = sanitizeCode(language, code);
 
   let filePath = null;
+  let inputFilePath = null;
   try {
     filePath = generateFile(language, code);
+    if (input) {
+      inputFilePath = generateInputFile(input);
+    }
     let result = {};
     switch (language) {
       case 'cpp':
-        result = await executeCpp(filePath);
+        result = await executeCpp(filePath, inputFilePath);
         break;
       case 'c':
-        result = await executeC(filePath);
+        result = await executeC(filePath, inputFilePath);
         break;
       case 'java':
-        result = await executeJava(filePath);
+        result = await executeJava(filePath, inputFilePath);
         break;
       default:
         return res.status(400).json({ error: 'Unsupported language.' });
+    }
+    if (inputFilePath) {
+      setTimeout(() => { try { fs.unlinkSync(inputFilePath); } catch (e) {
+        console.log("Error deleting input file:", e);
+      } }, 20000);
     }
     return res.json({
       stdout: result.stdout || '',
