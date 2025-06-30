@@ -79,6 +79,10 @@ const problemSchema = new mongoose.Schema({
         min: [16, 'Memory limit must be at least 16MB'],
         max: [1024, 'Memory limit cannot exceed 1024MB']
     },
+    constraints: {
+        type: [String],
+        required: [true, 'Constraints are required']
+    },
     publicTestCases: [testCaseSchema],
     hiddenTestCases: [testCaseSchema],
     totalSubmissions: {
@@ -105,6 +109,20 @@ const problemSchema = new mongoose.Schema({
     updatedAt: {
         type: Date,
         default: Date.now
+    },
+    starterCode: {
+        type: Map,
+        of: String,
+        default: {}
+    },
+    functionSignature: {
+        type: Map,
+        of: String,
+        default: {}
+    },
+    functionName: {
+        type: String,
+        default: 'solution'
     }
 }, {
     timestamps: true // Automatically manage createdAt and updatedAt

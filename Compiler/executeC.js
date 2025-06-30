@@ -15,26 +15,37 @@ const executeC = (filePath, inputFilePath = null) => {
   const outPath = path.join(outputPath, outputFileName);
 
   return new Promise((resolve, reject) => {
-    let runCmd = `gcc "${filePath}" -o "${outPath}" && "${outPath}"`;
-    if (inputFilePath) {
-      runCmd = `gcc "${filePath}" -o "${outPath}" && "${outPath}" < "${inputFilePath}"`;
-    }
-    exec(runCmd, (error, stdout, stderr) => {
-      const cleanStdout = (stdout || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
-      const cleanStderr = (stderr || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
-
-      setTimeout(() => { try { fs.unlinkSync(filePath); } catch (e) {
-        console.log("Error deleting file:", e);
-      } }, 20000);
-      setTimeout(() => { try { fs.unlinkSync(outPath); } catch (e) {
-        console.log("Error deleting output file:", e);
-      } }, 20000);
-
-      if (error) {
-        return reject({ error: error.message, stderr: cleanStderr });
+    // Step 1: Compile
+    exec(`gcc -Werror=return-type  "${filePath}" -o "${outPath}"`, (compileErr, compileStdout, compileStderr) => {
+      if (compileErr) {
+        console.log('C compilation error - compileStderr:', compileStderr);
+        console.log('C compilation error - compileErr:', compileErr);
+        setTimeout(() => { try { fs.unlinkSync(filePath); } catch (e) {
+          console.log("Error deleting file:", e);
+        } }, 20000);
+        return reject({ error: compileStderr, stderr: compileStderr });
       }
-      
-      resolve({ stdout: cleanStdout, stderr: cleanStderr });
+      // Step 2: Run
+      let runCmd = `"${outPath}"`;
+      if (inputFilePath) {
+        runCmd = `"${outPath}" < "${inputFilePath}"`;
+      }
+      const startTime = Date.now();
+      exec(runCmd, (runErr, runStdout, runStderr) => {
+        const execTime = Date.now() - startTime;
+        setTimeout(() => { try { fs.unlinkSync(filePath); } catch (e) {
+          console.log("Error deleting file:", e);
+        } }, 20000);
+        setTimeout(() => { try { fs.unlinkSync(outPath); } catch (e) {
+          console.log("Error deleting output file:", e);
+        } }, 20000);
+        if (runErr) {
+          console.log('C runtime error - runStderr:', runStderr);
+          console.log('C runtime error - runErr:', runErr);
+          return reject({ error: runStderr, stderr: runStderr });
+        }
+        resolve({ stdout: runStdout, stderr: runStderr, execTime });
+      });
     });
   });
 };

@@ -54,13 +54,30 @@ app.post('/compile', async (req, res) => {
     return res.json({
       stdout: result.stdout || '',
       stderr: result.stderr || '',
-      exitCode: result.exitCode !== undefined ? result.exitCode : 0
+      exitCode: result.exitCode !== undefined ? result.exitCode : 0,
+      execTime: result.execTime !== undefined ? result.execTime : null
     });
   } catch (error) {
     console.error('Compilation error:', error);
+    console.error('Error type:', typeof error);
+    console.error('Error keys:', Object.keys(error));
+    console.error('Error.stderr:', error.stderr);
+    console.error('Error.error:', error.error);
+    
+    let stderrMessage = '';
+    if (error.stderr) {
+      stderrMessage = typeof error.stderr === 'string' ? error.stderr : JSON.stringify(error.stderr);
+    } else if (error.error) {
+      stderrMessage = typeof error.error === 'string' ? error.error : JSON.stringify(error.error);
+    } else {
+      stderrMessage = typeof error === 'string' ? error : JSON.stringify(error);
+    }
+    
+    console.error('Final stderr message:', stderrMessage);
+    
     return res.status(500).json({
       stdout: '',
-      stderr: error.stderr || error.error || String(error),
+      stderr: stderrMessage,
       exitCode: error.exitCode !== undefined ? error.exitCode : 1
     });
   }

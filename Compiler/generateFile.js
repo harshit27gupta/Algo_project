@@ -8,17 +8,21 @@ if(!fs.existsSync(dirCodes)){
 }
 const generateFile = (language, code) => {
     let fileName;
+    let filePath;
+    
     if (language === 'java') {
-        const match = code.match(/public\s+class\s+([A-Za-z0-9_]+)/);
-        if (match) {
-            fileName = `${match[1]}.java`;
-        } else {
-            fileName = `${uuid()}.java`;
+        // Create unique directory for each Java submission to avoid race conditions
+        const uniqueDir = path.join(dirCodes, `java_${uuid()}`);
+        if (!fs.existsSync(uniqueDir)) {
+            fs.mkdirSync(uniqueDir, { recursive: true });
         }
+        fileName = `Solution.java`;
+        filePath = path.join(uniqueDir, fileName);
     } else {
         fileName = `${uuid()}.${language}`;
+        filePath = path.join(dirCodes, fileName);
     }
-    const filePath = path.join(dirCodes, fileName);
+    
     fs.writeFileSync(filePath, code);
     return filePath;
 }

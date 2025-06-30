@@ -14,25 +14,34 @@ const executeCpp = (filePath, inputFilePath = null) => {
   const outPath = path.join(outputPath, outputFileName);
 
   return new Promise((resolve, reject) => {
-    let runCmd = `g++ "${filePath}" -o "${outPath}" && "${outPath}"`;
-    if (inputFilePath) {
-      runCmd = `g++ "${filePath}" -o "${outPath}" && "${outPath}" < "${inputFilePath}"`;
-    }
-    exec(runCmd, (error, stdout, stderr) => {
-      const cleanStdout = (stdout || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
-      const cleanStderr = (stderr || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
-
-      setTimeout(() => { try { fs.unlinkSync(filePath); } catch (e) {
-        console.log("Error deleting file:", e);
-      } }, 20000);
-      setTimeout(() => { try { fs.unlinkSync(outPath); } catch (e) {
-        console.log("Error deleting output file:", e);
-      } }, 20000);
-
-      if (error) {
-        return reject({ error: error.message, stderr: cleanStderr });
+    // Step 1: Compile
+    exec(`g++ -Werror=return-type   "${filePath}" -o "${outPath}"`, (compileErr, compileStdout, compileStderr) => {
+      if (compileErr) {
+        // Compilation error: return only the compiler's stderr
+        setTimeout(() => { try { fs.unlinkSync(filePath); } catch (e) {
+          console.log("Error deleting file:", e);
+        } }, 20000);
+        return reject({ error: compileStderr, stderr: compileStderr });
       }
-      resolve({ stdout: cleanStdout, stderr: cleanStderr });
+      // Step 2: Run
+      let runCmd = `"${outPath}"`;
+      if (inputFilePath) {
+        runCmd = `"${outPath}" < "${inputFilePath}"`;
+      }
+      const startTime = Date.now();
+      exec(runCmd, (runErr, runStdout, runStderr) => {
+        const execTime = Date.now() - startTime;
+        setTimeout(() => { try { fs.unlinkSync(filePath); } catch (e) {
+          console.log("Error deleting file:", e);
+        } }, 20000);
+        setTimeout(() => { try { fs.unlinkSync(outPath); } catch (e) {
+          console.log("Error deleting output file:", e);
+        } }, 20000);
+        if (runErr) {
+          return reject({ error: runErr.message, stderr: runStderr });
+        }
+        resolve({ stdout: runStdout, stderr: runStderr, execTime });
+      });
     });
   });
 };

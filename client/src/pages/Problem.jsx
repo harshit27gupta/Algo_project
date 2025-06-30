@@ -35,7 +35,7 @@ const Problem = () => {
   const [activeTab, setActiveTab] = useState('description');
   const [showTestCases, setShowTestCases] = useState(true);
   const [code, setCode] = useState('');
-  const [language, setLanguage] = useState('javascript');
+  const [language, setLanguage] = useState('java');
   const [submitting, setSubmitting] = useState(false);
   const [submissionResult, setSubmissionResult] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -44,41 +44,34 @@ const Problem = () => {
   const [activeResultTab, setActiveResultTab] = useState(0);
 
   const languages = [
-    { value: 'javascript', label: 'JavaScript', extension: '.js' },
-    { value: 'python', label: 'Python', extension: '.py' },
     { value: 'java', label: 'Java', extension: '.java' },
     { value: 'cpp', label: 'C++', extension: '.cpp' },
     { value: 'c', label: 'C', extension: '.c' }
   ];
+  // console.log("constraints are", problem.constraints)
 
   const defaultCode = {
-    javascript: `function solution(input) {
-    // Your solution here
-    return input;
-}`,
-    python: `def solution(input):
-    # Your solution here
-    return input`,
     java: `public class Solution {
-    public static String solution(String input) {
+    public static int[] solution(int[] nums, int target) {
         // Your solution here
-        return input;
+        return new int[0];
     }
 }`,
     cpp: `#include <iostream>
-#include <string>
+#include <vector>
 using namespace std;
 
-string solution(string input) {
+vector<int> solution(vector<int>& nums, int target) {
     // Your solution here
-    return input;
+    return {};
 }`,
     c: `#include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 
-char* solution(char* input) {
+int* solution(int* nums, int numsSize, int target, int* returnSize) {
     // Your solution here
-    return input;
+    *returnSize = 0;
+    return NULL;
 }`
   };
 
@@ -87,8 +80,12 @@ char* solution(char* input) {
   }, [id]);
 
   useEffect(() => {
-    setCode(defaultCode[language]);
-  }, [language]);
+    if (problem && problem.starterCode && problem.starterCode[language]) {
+      setCode(problem.starterCode[language]);
+    } else {
+      setCode(defaultCode[language]);
+    }
+  }, [language, problem]);
 
   const fetchProblem = async () => {
     try {
@@ -141,7 +138,7 @@ char* solution(char* input) {
       if (response.data.status === 'accepted') {
         toast.success('Congratulations! Your solution is correct!');
       } else {
-        toast.error(`Submission failed: ${response.data.status.replace('_', ' ')}`);
+        toast.error(`Submission failed: ${response.data.status ? response.data.status.replace('_', ' ') : (response.data.message || 'Wrong Answer')}`);
       }
       setActiveTab('submission_result');
     } catch (err) {
@@ -259,6 +256,17 @@ char* solution(char* input) {
       </header>
 
       <div className="problem-main">
+        {/* Loading Overlay */}
+        {runningCode && (
+          <div className="loading-overlay">
+            <div className="loading-content">
+              <FaSpinner className="loading-spinner-large" />
+              <h3>Running Your Code...</h3>
+              <p>Please wait while we execute your solution against the test cases.</p>
+            </div>
+          </div>
+        )}
+        
         {/* Left Panel - Problem Description */}
         <div className="problem-left-panel">
           <div className="problem-tabs">
@@ -304,16 +312,11 @@ char* solution(char* input) {
 
                 <div className="problem-constraints">
                   <h3>Constraints</h3>
-                  <div className="constraints-grid">
-                    <div className="constraint-item">
-                      <FaClock />
-                      <span>Time Limit: {problem.timeLimit}ms</span>
-                    </div>
-                    <div className="constraint-item">
-                      <FaMemory />
-                      <span>Memory Limit: {problem.memoryLimit}MB</span>
-                    </div>
-                  </div>
+                  <ul className="constraints-list">
+                    {problem.constraints && problem.constraints.map((c, idx) => (
+                      <li key={idx}>{c}</li>
+                    ))}
+                  </ul>
                 </div>
 
                 <div className="problem-categories">
@@ -420,6 +423,22 @@ char* solution(char* input) {
                     <span className="detail-label">Expected Output:</span>
                     <pre className="detail-value expected">{runResult[activeResultTab].expected}</pre>
                   </div>
+                  {(runResult[activeResultTab].stderr && runResult[activeResultTab].stderr.trim() !== "") && (
+                    <div className="result-detail">
+                      <span className="detail-label" style={{ color: '#ef4444' }}>Compiler/Error:</span>
+                      <pre className="detail-value error" style={{ color: '#ef4444', background: '#1a1a1a', padding: '0.5rem', borderRadius: '4px', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                        {runResult[activeResultTab].stderr}
+                      </pre>
+                    </div>
+                  )}
+                  {(runResult[activeResultTab].error && runResult[activeResultTab].error.trim() !== "") && (
+                    <div className="result-detail">
+                      <span className="detail-label" style={{ color: '#ef4444' }}>Error:</span>
+                      <pre className="detail-value error" style={{ color: '#ef4444', background: '#1a1a1a', padding: '0.5rem', borderRadius: '4px', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                        {runResult[activeResultTab].error}
+                      </pre>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -436,7 +455,7 @@ char* solution(char* input) {
                       className="status-text"
                       style={{ color: getStatusColor(submissionResult.status) }}
                     >
-                      {submissionResult.status.replace('_', ' ').toUpperCase()}
+                      {(submissionResult.status ? submissionResult.status.replace('_', ' ').toUpperCase() : (submissionResult.message || 'UNKNOWN ERROR'))}
                     </span>
                   </div>
                   
@@ -459,6 +478,25 @@ char* solution(char* input) {
                     <div className="success-message">
                       <FaLightbulb />
                       <span>Great job! Your solution passed all test cases!</span>
+                    </div>
+                  )}
+
+                  {submissionResult.errorMessage && (
+                    <div className="error-message">
+                      <FaExclamationTriangle />
+                      <div className="error-content">
+                        <span className="error-title">Error Details:</span>
+                        <pre className="error-text">{submissionResult.errorMessage}</pre>
+                      </div>
+                    </div>
+                  )}
+
+                  {submissionResult.failedCase && (
+                    <div className="failed-case-feedback">
+                      <h4>Failed on Test Case #{submissionResult.failedCase.index}</h4>
+                      <div><b>Input:</b> <pre>{submissionResult.failedCase.input}</pre></div>
+                      <div><b>Your Output:</b> <pre>{submissionResult.failedCase.output}</pre></div>
+                      <div><b>Expected Output:</b> <pre>{submissionResult.failedCase.expected}</pre></div>
                     </div>
                   )}
                 </div>
@@ -495,7 +533,11 @@ char* solution(char* input) {
           </div>
 
           <div className="code-editor">
-            <CodeEditor language={language === 'cpp' ? 'cpp' : language} code={code} onChange={setCode} />
+            <CodeEditor 
+              language={language === 'cpp' ? 'cpp' : language} 
+              code={code} 
+              onChange={setCode} 
+            />
           </div>
 
           <div className="editor-footer">

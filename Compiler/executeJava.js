@@ -14,25 +14,91 @@ const executeJava = (filePath, inputFilePath = null) => {
     const classFile = path.join(dir, `${jobId}.class`);
 
     return new Promise((resolve, reject) => {
-        let runCmd = `javac "${filePath}" && java -cp "${dir}" ${jobId}`;
-        if (inputFilePath) {
-            runCmd = `javac "${filePath}" && java -cp "${dir}" ${jobId} < "${inputFilePath}"`;
-        }
-        exec(runCmd, (error, stdout, stderr) => {
-            const cleanStdout = (stdout || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
-            const cleanStderr = (stderr || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').trimEnd();
-
-            setTimeout(() => { try { fs.unlinkSync(filePath); } catch (e) {
-                console.log("Error deleting file:", e);
-            } }, 20000);
-            setTimeout(() => { try { fs.unlinkSync(classFile); } catch (e) {
-                console.log("Error deleting class file:", e);
-            } }, 20000);
-
-            if (error) {
-                return reject({ error: error.message, stderr: cleanStderr });
+        // Step 1: Compile with timeout
+        const compileProcess = exec(`javac "${filePath}"`, { timeout: 10000 }, (compileErr, compileStdout, compileStderr) => {
+            if (compileErr) {
+                setTimeout(() => { 
+                    try { 
+                        // Clean up entire directory for Java submissions
+                        if (dir.includes('java_')) {
+                            if (fs.existsSync(dir)) {
+                                fs.rmSync(dir, { recursive: true, force: true });
+                            }
+                        } else {
+                            if (fs.existsSync(filePath)) fs.unlinkSync(filePath); 
+                        }
+                    } catch (e) {
+                        console.log("Error deleting file/directory:", e);
+                    } 
+                }, 20000);
+                console.log('Java compilation error - compileStderr:', compileStderr);
+                console.log('Java compilation error - compileErr:', compileErr);
+                
+                // Enhanced error handling for Java-specific issues
+                let errorMessage = compileStderr;
+                if (compileStderr.includes('class not found') || compileStderr.includes('cannot find symbol')) {
+                    errorMessage = 'Class not found error: Please ensure your class name matches the file name and all required classes are properly defined.';
+                } else if (compileStderr.includes('missing return statement')) {
+                    errorMessage = 'Missing return statement: Please ensure your method returns the expected value.';
+                } else if (compileStderr.includes('illegal start of expression')) {
+                    errorMessage = 'Syntax error: Please check your code syntax and method structure.';
+                } else if (compileErr.code === 'ETIMEDOUT') {
+                    errorMessage = 'Compilation timeout: The compilation took too long. Please check your code for infinite loops or complex operations.';
+                }
+                
+                return reject({ error: errorMessage, stderr: compileStderr });
             }
-            resolve({ stdout: cleanStdout, stderr: cleanStderr });
+            
+            // Step 2: Run with timeout
+            let runCmd = `java -cp "${dir}" ${jobId}`;
+            if (inputFilePath) {
+                runCmd = `java -cp "${dir}" ${jobId} < "${inputFilePath}"`;
+            }
+            const startTime = Date.now();
+            
+            const runProcess = exec(runCmd, { timeout: 15000 }, (runErr, runStdout, runStderr) => {
+                const execTime = Date.now() - startTime;
+                setTimeout(() => { 
+                    try { 
+                        // Clean up entire directory for Java submissions
+                        if (dir.includes('java_')) {
+                            if (fs.existsSync(dir)) {
+                                fs.rmSync(dir, { recursive: true, force: true });
+                            }
+                        } else {
+                            if (fs.existsSync(filePath)) fs.unlinkSync(filePath); 
+                        }
+                    } catch (e) {
+                        console.log("Error deleting file/directory:", e);
+                    } 
+                }, 20000);
+                setTimeout(() => { 
+                    try { 
+                        if (fs.existsSync(classFile)) fs.unlinkSync(classFile); 
+                    } catch (e) {
+                        console.log("Error deleting class file:", e);
+                    } 
+                }, 20000);
+                if (runErr) {
+                    console.log('Java runtime error - runStderr:', runStderr);
+                    console.log('Java runtime error - runErr:', runErr);
+                    
+                    // Enhanced runtime error handling
+                    let errorMessage = runStderr;
+                    if (runStderr.includes('NoClassDefFoundError') || runStderr.includes('ClassNotFoundException')) {
+                        errorMessage = 'Class not found at runtime: The compiled class could not be found. This may be due to a class name mismatch.';
+                    } else if (runStderr.includes('NoSuchMethodError')) {
+                        errorMessage = 'Method not found: The main method or required method could not be found.';
+                    } else if (runStderr.includes('Exception in thread "main"')) {
+                        errorMessage = 'Runtime exception: ' + runStderr.split('Exception in thread "main"')[1]?.trim() || runStderr;
+                    } else if (runErr.code === 'ETIMEDOUT') {
+                        errorMessage = 'Execution timeout: The program took too long to execute. Please check for infinite loops or inefficient algorithms.';
+                    }
+                    
+                    return reject({ error: errorMessage, stderr: runStderr });
+                }
+                resolve({ stdout: runStdout, stderr: runStderr, execTime });
+            });
         });
     });
 };
