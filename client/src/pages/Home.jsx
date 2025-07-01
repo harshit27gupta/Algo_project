@@ -4,6 +4,7 @@ import { FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
 import './Home.css';
 import { toast } from 'react-toastify';
 import { getAllProblems } from '../services/api';
+import { clearAllUserCodes } from '../utils/codePersistence';
 
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,6 +51,16 @@ const Home = () => {
 
   const handleLogout = () => {
     setLogoutLoading(true);
+    // Get userId from localStorage before removing user
+    let userId = 'guest';
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        if (userObj && userObj._id) userId = userObj._id;
+      }
+    } catch (e) {}
+    clearAllUserCodes(userId);
     setTimeout(() => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -58,6 +69,7 @@ const Home = () => {
       setUser(null);
       setLogoutLoading(false);
       toast.success('Logged out!');
+      fetchProblems(); // Re-fetch problems for guest
       navigate('/');
     }, 1500);
   };

@@ -28,6 +28,16 @@ import './Problem.css';
 import CodeEditor from '../components/CodeEditor';
 import RecentSubmissions from '../components/RecentSubmissions';
 
+// Get userId from localStorage (assume user is stored as JSON with _id)
+let userId = 'guest';
+try {
+  const userStr = localStorage.getItem('user');
+  if (userStr) {
+    const userObj = JSON.parse(userStr);
+    if (userObj && userObj._id) userId = userObj._id;
+  }
+} catch (e) {}
+
 const Problem = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -101,16 +111,16 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     
     const templateCode = getTemplateCode();
     setCode(templateCode);
-    clearCode(id, language);
+    clearCode(userId, id, language);
     setHasUnsavedChanges(false);
     toast.success('Code reset to template!');
-  }, [id, language, getTemplateCode, hasUnsavedChanges]);
+  }, [userId, id, language, getTemplateCode, hasUnsavedChanges]);
 
   // Load saved code or template on language/problem change
   useEffect(() => {
     if (!id || !language) return;
     
-    const savedCode = loadCode(id, language);
+    const savedCode = loadCode(userId, id, language);
     if (savedCode) {
       setCode(savedCode);
       setHasUnsavedChanges(false);
@@ -119,7 +129,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
       setCode(templateCode);
       setHasUnsavedChanges(false);
     }
-  }, [language, problem, id, getTemplateCode]);
+  }, [language, problem, id, getTemplateCode, userId]);
 
   // Save code to localStorage when it changes
   useEffect(() => {
@@ -129,13 +139,13 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     const isTemplate = code.trim() === templateCode.trim();
     
     if (isTemplate) {
-      clearCode(id, language);
+      clearCode(userId, id, language);
       setHasUnsavedChanges(false);
     } else {
-      saveCode(id, language, code);
+      saveCode(userId, id, language, code);
       setHasUnsavedChanges(true);
     }
-  }, [code, language, id, getTemplateCode]);
+  }, [code, language, id, getTemplateCode, userId]);
 
   // Warn user before leaving with unsaved changes
   useEffect(() => {
