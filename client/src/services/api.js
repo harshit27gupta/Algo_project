@@ -209,3 +209,9 @@ export const runCode = async (problemId, code, language) => {
     );
   }
 };
+
+export const getRecentSubmissions = async (problemId, limit = 100) => {
+  const authInstance = createAuthInstance();
+  const res = await authInstance.get(`/problems/${problemId}/recent-submissions?limit=${limit}`);
+  return res.data;
+};

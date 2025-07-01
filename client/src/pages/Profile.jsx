@@ -34,6 +34,7 @@ const Profile = () => {
   const [submissions, setSubmissions] = useState([]);
   const [solvedProblems, setSolvedProblems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [submissionsLoading, setSubmissionsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({});
@@ -50,7 +51,7 @@ const Profile = () => {
     total: 0,
     pages: 0
   });
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     fetchUserData();
@@ -58,6 +59,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (activeTab === 'submissions') {
+      console.log('Fetching submissions with filters:', submissionFilters);
       fetchSubmissions();
     } else if (activeTab === 'solved') {
       fetchSolvedProblems();
@@ -90,6 +92,7 @@ const Profile = () => {
 
   const fetchSubmissions = async () => {
     try {
+      setSubmissionsLoading(true);
       const filters = {
         ...submissionFilters,
         page: submissionPagination.page,
@@ -97,10 +100,26 @@ const Profile = () => {
       };
       
       const response = await getUserSubmissions(filters);
-      setSubmissions(response.data.submissions);
-      setSubmissionPagination(response.data.pagination);
+      console.log('Submissions response:', response); // Debug log
+      
+      if (response.data && response.data.submissions) {
+        // Keep all submissions but ensure they have basic structure
+        const validSubmissions = response.data.submissions.filter(submission => 
+          submission && submission._id
+        );
+        setSubmissions(validSubmissions);
+        console.log('Valid submissions:', validSubmissions); // Debug log
+      } else {
+        setSubmissions([]);
+      }
+      
+      setSubmissionPagination(response.data.pagination || { page: 1, total: 0, pages: 0 });
     } catch (err) {
-      toast.error(err.message);
+      console.error('Error fetching submissions:', err);
+      toast.error(err.message || 'Failed to fetch submissions');
+      setSubmissions([]);
+    } finally {
+      setSubmissionsLoading(false);
     }
   };
 
@@ -138,9 +157,20 @@ const Profile = () => {
         return <FaExclamationTriangle className="status-icon wrong" />;
       case 'time_limit_exceeded':
         return <FaClock className="status-icon tle" />;
+      case 'memory_limit_exceeded':
+        return <FaExclamationTriangle className="status-icon mle" />;
+      case 'runtime_error':
+        return <FaExclamationTriangle className="status-icon runtime" />;
+      case 'compilation_error':
+        return <FaExclamationTriangle className="status-icon compile" />;
       default:
         return <FaExclamationTriangle className="status-icon error" />;
     }
+  };
+
+  const getStatusText = (status) => {
+    if (!status) return 'UNKNOWN';
+    return status.replace('_', ' ').toUpperCase();
   };
 
   const getDifficultyColor = (difficulty) => {
@@ -155,6 +185,9 @@ const Profile = () => {
         return '#6b7280';
     }
   };
+
+  const formatExecutionTime = (ms) => ms === undefined ? 'N/A' : (ms < 1000 ? `${ms}ms` : `${(ms/1000).toFixed(3)}s`);
+  const formatMemory = (mb) => mb === undefined ? 'N/A' : (mb < 1024 ? `${mb}MB` : `${(mb/1024).toFixed(2)}GB`);
 
   if (loading) {
     return (
@@ -402,7 +435,12 @@ const Profile = () => {
               </div>
 
               <div className="submissions-list">
-                {submissions.length === 0 ? (
+                {submissionsLoading ? (
+                  <div className="submission-loading">
+                    <div className="loading-spinner"></div>
+                    <p>Loading submissions...</p>
+                  </div>
+                ) : submissions.length === 0 ? (
                   <div className="empty-state">No submissions yet.</div>
                 ) : (
                   submissions.map((submission) => (
@@ -411,45 +449,69 @@ const Profile = () => {
                         <div className="submission-status">
                           {getStatusIcon(submission.status)}
                           <span className={`status-text ${submission.status}`}>
-                            {submission.status.replace('_', ' ').toUpperCase()}
+                            {getStatusText(submission.status)}
                           </span>
                         </div>
                         <div className="submission-meta">
-                          <span className="submission-language">{submission.language}</span>
+                          <span className="submission-language">{submission.language || 'Unknown'}</span>
                           <span className="submission-time">
-                            {new Date(submission.submittedAt).toLocaleDateString()}
+                            {submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString() : 'Unknown date'}
                           </span>
                         </div>
                       </div>
                       <div className="submission-problem">
-                        <Link to={`/problem/${submission.problem._id}`}>
-                          {submission.problem.title}
-                        </Link>
-                        <div className="problem-meta">
-                          <span 
-                            className="difficulty"
-                            style={{ color: getDifficultyColor(submission.problem.difficulty) }}
-                          >
-                            {submission.problem.difficulty}
-                          </span>
-                          {submission.problem.rating > 0 && (
-                            <span className="rating">Rating: {submission.problem.rating}</span>
-                          )}
-                        </div>
+                        {submission.problem ? (
+                          <>
+                            <Link to={`/problem/${submission.problem._id}`}>
+                              {submission.problem.title}
+                            </Link>
+                            <div className="problem-meta">
+                              <span 
+                                className="difficulty"
+                                style={{ color: getDifficultyColor(submission.problem.difficulty) }}
+                              >
+                                {submission.problem.difficulty}
+                              </span>
+                              {submission.problem.rating > 0 && (
+                                <span className="rating">Rating: {submission.problem.rating}</span>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="problem-meta">
+                            <span className="difficulty" style={{ color: '#6b7280' }}>
+                              Problem not found
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <div className="submission-details">
                         <div className="detail-item">
                           <span className="detail-label">Execution Time:</span>
-                          <span className="detail-value">{submission.getFormattedExecutionTime && submission.getFormattedExecutionTime()}</span>
+                          <span className="detail-value">
+                            {submission.executionTime ? 
+                              (submission.executionTime < 1000 ? 
+                                `${submission.executionTime}ms` : 
+                                `${(submission.executionTime / 1000).toFixed(3)}s`
+                              ) : 'N/A'
+                            }
+                          </span>
                         </div>
                         <div className="detail-item">
                           <span className="detail-label">Memory Used:</span>
-                          <span className="detail-value">{submission.getFormattedMemoryUsage && submission.getFormattedMemoryUsage()}</span>
+                          <span className="detail-value">
+                            {submission.memoryUsed ? 
+                              (submission.memoryUsed < 1024 ? 
+                                `${submission.memoryUsed}MB` : 
+                                `${(submission.memoryUsed / 1024).toFixed(2)}GB`
+                              ) : 'N/A'
+                            }
+                          </span>
                         </div>
                         <div className="detail-item">
                           <span className="detail-label">Test Cases:</span>
                           <span className="detail-value">
-                            {submission.testCasesPassed}/{submission.totalTestCases}
+                            {submission.testCasesPassed || 0}/{submission.totalTestCases || 0}
                           </span>
                         </div>
                       </div>
@@ -513,8 +575,7 @@ const Profile = () => {
                           Solved on {new Date(item.firstSolvedAt).toLocaleDateString()}
                         </span>
                         <div className="best-submission">
-                          <span>Best: {item.bestSubmission.getFormattedExecutionTime && item.bestSubmission.getFormattedExecutionTime()}</span>
-                          <span>{item.bestSubmission.getFormattedMemoryUsage && item.bestSubmission.getFormattedMemoryUsage()}</span>
+                          <span>Best: {formatExecutionTime(item.bestExecutionTime)} {formatMemory(item.bestMemoryUsed)}</span>
                         </div>
                       </div>
                     </div>

@@ -467,6 +467,18 @@
   color: #f59e0b;
 }
 
+.status-icon.mle {
+  color: #8b5cf6;
+}
+
+.status-icon.runtime {
+  color: #dc2626;
+}
+
+.status-icon.compile {
+  color: #ea580c;
+}
+
 .status-icon.error {
   color: #6b7280;
 }
@@ -670,7 +682,8 @@
 
 /* Loading and Error States */
 .profile-loading,
-.profile-error {
+.profile-error,
+.submission-loading {
   display: flex;
   flex-direction: column;
   align-items: center;

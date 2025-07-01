@@ -11,6 +11,7 @@ import {
     runCode
 } from '../controllers/problem.js';
 import { authenticateUser, authorizeRoles } from '../middleware/auth.js';
+import { getRecentSubmissions } from '../controllers/submission.js';
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.use(authenticateUser);
 router.post('/:id/run', runCode);
 router.post('/:id/submit', submitSolution);
 router.get('/:problemId/status', getUserProblemStatus);
+router.get('/:id/recent-submissions', getRecentSubmissions);
 
 // Author and admin only routes
 router.post('/', authorizeRoles('admin'), createProblem);

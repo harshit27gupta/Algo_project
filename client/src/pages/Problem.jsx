@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   FaArrowLeft, 
@@ -18,12 +18,15 @@ import {
   FaLightbulb,
   FaExclamationTriangle,
   FaCheckCircle,
-  FaSpinner
+  FaSpinner,
+  FaUndo
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getProblem, submitSolution, runCode } from '../services/api';
+import { saveCode, loadCode, clearCode, hasSavedCode } from '../utils/codePersistence';
 import './Problem.css';
 import CodeEditor from '../components/CodeEditor';
+import RecentSubmissions from '../components/RecentSubmissions';
 
 const Problem = () => {
   const { id } = useParams();
@@ -42,6 +45,8 @@ const Problem = () => {
   const [runningCode, setRunningCode] = useState(false);
   const [runResult, setRunResult] = useState(null);
   const [activeResultTab, setActiveResultTab] = useState(0);
+  const [refreshSubmissions, setRefreshSubmissions] = useState(0);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const languages = [
     { value: 'java', label: 'Java', extension: '.java' },
@@ -79,13 +84,86 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     fetchProblem();
   }, [id]);
 
-  useEffect(() => {
+  // Function to get the appropriate template code
+  const getTemplateCode = useCallback(() => {
     if (problem && problem.starterCode && problem.starterCode[language]) {
-      setCode(problem.starterCode[language]);
-    } else {
-      setCode(defaultCode[language]);
+      return problem.starterCode[language];
     }
+    return defaultCode[language];
   }, [language, problem]);
+
+  // Function to reset code to template
+  const handleResetCode = useCallback(() => {
+    if (hasUnsavedChanges) {
+      const confirmed = window.confirm('Are you sure you want to reset your code? This will discard all your changes.');
+      if (!confirmed) return;
+    }
+    
+    const templateCode = getTemplateCode();
+    setCode(templateCode);
+    clearCode(id, language);
+    setHasUnsavedChanges(false);
+    toast.success('Code reset to template!');
+  }, [id, language, getTemplateCode, hasUnsavedChanges]);
+
+  // Load saved code or template on language/problem change
+  useEffect(() => {
+    if (!id || !language) return;
+    
+    const savedCode = loadCode(id, language);
+    if (savedCode) {
+      setCode(savedCode);
+      setHasUnsavedChanges(false);
+    } else {
+      const templateCode = getTemplateCode();
+      setCode(templateCode);
+      setHasUnsavedChanges(false);
+    }
+  }, [language, problem, id, getTemplateCode]);
+
+  // Save code to localStorage when it changes
+  useEffect(() => {
+    if (!id || !language || !code) return;
+    
+    const templateCode = getTemplateCode();
+    const isTemplate = code.trim() === templateCode.trim();
+    
+    if (isTemplate) {
+      clearCode(id, language);
+      setHasUnsavedChanges(false);
+    } else {
+      saveCode(id, language, code);
+      setHasUnsavedChanges(true);
+    }
+  }, [code, language, id, getTemplateCode]);
+
+  // Warn user before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ctrl/Cmd + R to reset code
+      if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+        e.preventDefault();
+        handleResetCode();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleResetCode]);
 
   const fetchProblem = async () => {
     try {
@@ -141,6 +219,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
         toast.error(`Submission failed: ${response.data.status ? response.data.status.replace('_', ' ') : (response.data.message || 'Wrong Answer')}`);
       }
       setActiveTab('submission_result');
+      setRefreshSubmissions(v => v + 1);
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -522,6 +601,18 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
               </select>
             </div>
             <div className="editor-actions">
+              {hasUnsavedChanges && (
+                <span className="unsaved-indicator" title="Saved!">
+                  •
+                </span>
+              )}
+              <button 
+                className="reset-button"
+                onClick={handleResetCode}
+                title="Reset to template (Ctrl+R)"
+              >
+                <FaUndo />
+              </button>
               <button 
                 className="copy-button"
                 onClick={handleCopyCode}
@@ -578,6 +669,8 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
           </div>
         </div>
       </div>
+
+      <RecentSubmissions problemId={id} refreshTrigger={refreshSubmissions} />
     </div>
   );
 };

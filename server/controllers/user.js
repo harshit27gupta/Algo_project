@@ -185,18 +185,18 @@ export const getUserStats = async (req, res) => {
                     as: 'problemData'
                 }
             },
+            { $unwind: '$problemData' },
             {
-                $unwind: '$problemData'
+                $group: {
+                    _id: { problem: '$problem', difficulty: '$problemData.difficulty' },
+                    hasAccepted: { $max: { $cond: [{ $eq: ['$status', 'accepted'] }, 1, 0] } }
+                }
             },
             {
                 $group: {
-                    _id: '$problemData.difficulty',
+                    _id: '$_id.difficulty',
                     totalAttempted: { $sum: 1 },
-                    solved: {
-                        $sum: {
-                            $cond: [{ $eq: ['$status', 'accepted'] }, 1, 0]
-                        }
-                    }
+                    solved: { $sum: '$hasAccepted' }
                 }
             }
         ]);
@@ -272,7 +272,8 @@ export const getSolvedProblems = async (req, res) => {
                 $group: {
                     _id: '$problem',
                     firstSolvedAt: { $min: '$submittedAt' },
-                    bestSubmission: { $first: '$$ROOT' }
+                    bestExecutionTime: { $min: '$executionTime' },
+                    bestMemoryUsed: { $min: '$memoryUsed' }
                 }
             },
             {

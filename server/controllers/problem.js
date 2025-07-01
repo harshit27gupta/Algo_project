@@ -678,7 +678,27 @@ export const submitSolution = async (req, res) => {
                 if (compileRes.data.stderr && compileRes.data.stderr.trim() !== '') {
                     status = 'runtime_error';
                     errorMessage = compileRes.data.stderr;
-                    break;
+                    // Save runtime error submission
+                    await Submission.create({
+                        user: req.user.id,
+                        problem: id,
+                        code,
+                        language,
+                        status,
+                        executionTime: totalExecutionTime,
+                        memoryUsed: totalMemoryUsed,
+                        testCasesPassed,
+                        totalTestCases,
+                        errorMessage: errorMessage || 'Runtime Error'
+                    });
+                    return res.status(StatusCodes.OK).json({
+                        success: false,
+                        message: 'Runtime Error',
+                        status: 'runtime_error',
+                        error: errorMessage,
+                        testCasesPassed,
+                        totalTestCases
+                    });
                 }
                 
                 // Check if test case passed
@@ -686,7 +706,19 @@ export const submitSolution = async (req, res) => {
                     testCasesPassed++;
                 } else {
                     status = 'wrong_answer';
-                    // Return detailed feedback for the failed test case
+                    // Save wrong answer submission
+                    await Submission.create({
+                        user: req.user.id,
+                        problem: id,
+                        code,
+                        language,
+                        status,
+                        executionTime: totalExecutionTime,
+                        memoryUsed: totalMemoryUsed,
+                        testCasesPassed,
+                        totalTestCases,
+                        errorMessage: errorMessage || 'Wrong Answer'
+                    });
                     return res.status(StatusCodes.OK).json({
                         success: false,
                         message: 'Wrong Answer',
@@ -718,6 +750,19 @@ export const submitSolution = async (req, res) => {
                 console.error('Error executing test case:', error);
                 status = 'runtime_error';
                 errorMessage = error.message || 'Execution failed';
+                // Save runtime error submission
+                await Submission.create({
+                    user: req.user.id,
+                    problem: id,
+                    code,
+                    language,
+                    status,
+                    executionTime: totalExecutionTime,
+                    memoryUsed: totalMemoryUsed,
+                    testCasesPassed,
+                    totalTestCases,
+                    errorMessage: errorMessage || 'Execution failed'
+                });
                 break;
             }
         }
@@ -733,7 +778,7 @@ export const submitSolution = async (req, res) => {
             memoryUsed: totalMemoryUsed,
             testCasesPassed,
             totalTestCases,
-            errorMessage: errorMessage || undefined
+            errorMessage: errorMessage || 'Execution failed'
         });
 
         // Update problem statistics

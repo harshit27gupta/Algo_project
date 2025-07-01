@@ -1,0 +1,95 @@
+// Utility functions for persisting user code in localStorage
+
+const STORAGE_PREFIX = 'algo_judge_code_';
+
+/**
+ * Generate a unique key for storing code for a specific problem and language
+ * @param {string} problemId - The problem ID
+ * @param {string} language - The programming language
+ * @returns {string} The storage key
+ */
+export const getStorageKey = (problemId, language) => {
+  return `${STORAGE_PREFIX}${problemId}_${language}`;
+};
+
+/**
+ * Save user code to localStorage
+ * @param {string} problemId - The problem ID
+ * @param {string} language - The programming language
+ * @param {string} code - The user's code
+ */
+export const saveCode = (problemId, language, code) => {
+  try {
+    const key = getStorageKey(problemId, language);
+    localStorage.setItem(key, code);
+  } catch (error) {
+    console.warn('Failed to save code to localStorage:', error);
+  }
+};
+
+/**
+ * Load user code from localStorage
+ * @param {string} problemId - The problem ID
+ * @param {string} language - The programming language
+ * @returns {string|null} The saved code or null if not found
+ */
+export const loadCode = (problemId, language) => {
+  try {
+    const key = getStorageKey(problemId, language);
+    return localStorage.getItem(key);
+  } catch (error) {
+    console.warn('Failed to load code from localStorage:', error);
+    return null;
+  }
+};
+
+/**
+ * Clear saved code for a specific problem and language
+ * @param {string} problemId - The problem ID
+ * @param {string} language - The programming language
+ */
+export const clearCode = (problemId, language) => {
+  try {
+    const key = getStorageKey(problemId, language);
+    localStorage.removeItem(key);
+  } catch (error) {
+    console.warn('Failed to clear code from localStorage:', error);
+  }
+};
+
+/**
+ * Check if there's saved code for a specific problem and language
+ * @param {string} problemId - The problem ID
+ * @param {string} language - The programming language
+ * @returns {boolean} True if saved code exists
+ */
+export const hasSavedCode = (problemId, language) => {
+  try {
+    const key = getStorageKey(problemId, language);
+    return localStorage.getItem(key) !== null;
+  } catch (error) {
+    console.warn('Failed to check saved code in localStorage:', error);
+    return false;
+  }
+};
+
+/**
+ * Get all saved codes for a specific problem across all languages
+ * @param {string} problemId - The problem ID
+ * @returns {Object} Object with language as key and code as value
+ */
+export const getAllSavedCodes = (problemId) => {
+  const savedCodes = {};
+  try {
+    const languages = ['java', 'cpp', 'c'];
+    languages.forEach(language => {
+      const code = loadCode(problemId, language);
+      if (code) {
+        savedCodes[language] = code;
+      }
+    });
+  } catch (error) {
+    console.warn('Failed to get all saved codes:', error);
+  }
+  return savedCodes;
+}; 
