@@ -15,16 +15,13 @@ app.get('/', (req, res) => {
 
 app.post('/compile', async (req, res) => {
   const startTime = Date.now();
-  console.log(`🔧 [COMPILE] Starting compilation - Language: ${req.body.language} - IP: ${req.ip}`);
   
   let { language, code, input } = req.body;
 
   if (!language) {
-    console.log(`❌ [COMPILE] Missing language parameter`);
     return res.status(400).json({ error: 'Please provide a language.' });
   }
   if (!code) {
-    console.log(`❌ [COMPILE] Missing code parameter`);
     return res.status(400).json({ error: 'Please provide code to compile.' });
   }
 
@@ -53,12 +50,10 @@ app.post('/compile', async (req, res) => {
     }
     if (inputFilePath) {
       setTimeout(() => { try { fs.unlinkSync(inputFilePath); } catch (e) {
-        console.log("Error deleting input file:", e);
       } }, 20000);
     }
     const endTime = Date.now();
     const totalTime = endTime - startTime;
-    console.log(`✅ [COMPILE] Compilation completed - Language: ${language} - Total time: ${totalTime}ms - Exec time: ${result.execTime || 'N/A'}ms`);
     
     return res.json({
       stdout: result.stdout || '',
@@ -69,12 +64,6 @@ app.post('/compile', async (req, res) => {
   } catch (error) {
     const endTime = Date.now();
     const totalTime = endTime - startTime;
-    console.log(`❌ [COMPILE] Compilation failed - Language: ${language} - Total time: ${totalTime}ms`);
-    console.error('Compilation error:', error);
-    console.error('Error type:', typeof error);
-    console.error('Error keys:', Object.keys(error));
-    console.error('Error.stderr:', error.stderr);
-    console.error('Error.error:', error.error);
     
     let stderrMessage = '';
     if (error.stderr) {
@@ -84,8 +73,6 @@ app.post('/compile', async (req, res) => {
     } else {
       stderrMessage = typeof error === 'string' ? error : JSON.stringify(error);
     }
-    
-    console.error('Final stderr message:', stderrMessage);
     
     return res.status(500).json({
       stdout: '',

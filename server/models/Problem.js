@@ -125,25 +125,21 @@ const problemSchema = new mongoose.Schema({
         default: 'solution'
     }
 }, {
-    timestamps: true // Automatically manage createdAt and updatedAt
+    timestamps: true
 });
 
-// Virtual for acceptance rate
 problemSchema.virtual('acceptanceRate').get(function() {
     if (this.totalSubmissions === 0) return 0;
     return (this.successfulSubmissions / this.totalSubmissions) * 100;
 });
 
-// Index for better search performance
 problemSchema.index({ title: 'text', description: 'text', categories: 'text' });
 
-// Pre-save middleware to update the updatedAt timestamp
 problemSchema.pre('save', function(next) {
     this.updatedAt = Date.now();
     next();
 });
 
-// Method to calculate difficulty color
 problemSchema.methods.getDifficultyColor = function() {
     switch (this.difficulty.toLowerCase()) {
         case 'easy':
@@ -157,7 +153,6 @@ problemSchema.methods.getDifficultyColor = function() {
     }
 };
 
-// Method to calculate rating color (Codeforces style)
 problemSchema.methods.getRatingColor = function() {
     if (this.rating >= 2400) return '#ff0000';
     if (this.rating >= 2100) return '#ff8c00';
@@ -168,17 +163,14 @@ problemSchema.methods.getRatingColor = function() {
     return '#808080';
 };
 
-// Static method to find problems by difficulty
 problemSchema.statics.findByDifficulty = function(difficulty) {
     return this.find({ difficulty: difficulty });
 };
 
-// Static method to find problems by categories
 problemSchema.statics.findByCategories = function(categories) {
     return this.find({ categories: { $in: categories } });
 };
 
-// Static method to find problems by rating range
 problemSchema.statics.findByRatingRange = function(min, max) {
     return this.find({ rating: { $gte: min, $lte: max } });
 };

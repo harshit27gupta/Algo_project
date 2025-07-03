@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import {v4 as uuid} from 'uuid';
-const __dirname = path.resolve();
+    const __dirname = path.resolve();
 const dirCodes = path.join(__dirname,"user_codes");
 if(!fs.existsSync(dirCodes)){
     fs.mkdirSync(dirCodes, {recursive: true});
@@ -11,7 +11,6 @@ const generateFile = (language, code) => {
     let filePath;
     
     if (language === 'java') {
-        // Create unique directory for each Java submission to avoid race conditions
         const uniqueDir = path.join(dirCodes, `java_${uuid()}`);
         if (!fs.existsSync(uniqueDir)) {
             fs.mkdirSync(uniqueDir, { recursive: true });
@@ -27,7 +26,6 @@ const generateFile = (language, code) => {
     return filePath;
 }
 
-// Add this function to generate an input file
 function generateInputFile(input) {
     const inputDir = path.join(__dirname, "inputs");
     if (!fs.existsSync(inputDir)) {

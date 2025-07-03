@@ -1,20 +1,14 @@
 import express from 'express';
 import { body } from 'express-validator';
-import {
-    getUserProfile,
-    updateUserProfile,
-    getUserSubmissions,
-    getUserStats,
-    getSolvedProblems
-} from '../controllers/user.js';
+import { getUserProfile, updateUserProfile } from '../controllers/userProfileController.js';
+import { getUserStats } from '../controllers/userStatsController.js';
+import { getUserSubmissions, getSolvedProblems } from '../controllers/userSubmissionsController.js';
 import { authenticateUser } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// All routes require authentication
 router.use(authenticateUser);
 
-// Input validation rules
 const updateProfileValidation = [
     body('fullName')
         .optional()
@@ -30,11 +24,9 @@ const updateProfileValidation = [
         .withMessage('New password must be at least 6 characters')
 ];
 
-// User profile routes
 router.get('/profile', getUserProfile);
 router.patch('/profile', updateProfileValidation, updateUserProfile);
 
-// User statistics and history
 router.get('/stats', getUserStats);
 router.get('/submissions', getUserSubmissions);
 router.get('/solved', getSolvedProblems);

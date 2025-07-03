@@ -6,7 +6,6 @@ import { StatusCodes } from 'http-status-codes';
 import ErrorResponse from '../utils/errorResponse.js';
 import bcrypt from 'bcryptjs';
 
-// Get user profile
 export const getUserProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
@@ -28,7 +27,6 @@ export const getUserProfile = async (req, res) => {
     }
 };
 
-// Update user profile
 export const updateUserProfile = async (req, res) => {
     try {
         const { fullName, email, currentPassword, newPassword } = req.body;
@@ -39,13 +37,11 @@ export const updateUserProfile = async (req, res) => {
             throw new ErrorResponse('User not found', StatusCodes.NOT_FOUND);
         }
 
-        // Update basic info
         if (fullName) {
             user.fullName = fullName;
         }
 
         if (email && email !== user.email) {
-            // Check if email is already taken
             const existingUser = await User.findOne({ email });
             if (existingUser) {
                 throw new ErrorResponse('Email already in use', StatusCodes.BAD_REQUEST);
@@ -53,7 +49,6 @@ export const updateUserProfile = async (req, res) => {
             user.email = email;
         }
 
-        // Update password if provided
         if (newPassword) {
             if (!currentPassword) {
                 throw new ErrorResponse('Current password is required to change password', StatusCodes.BAD_REQUEST);
@@ -69,7 +64,6 @@ export const updateUserProfile = async (req, res) => {
 
         await user.save();
 
-        // Return user without password
         const updatedUser = await User.findById(user._id).select('-password');
 
         res.status(StatusCodes.OK).json({
@@ -86,7 +80,6 @@ export const updateUserProfile = async (req, res) => {
     }
 };
 
-// Get user submission history with filtering
 export const getUserSubmissions = async (req, res) => {
     try {
         const { 
@@ -100,7 +93,6 @@ export const getUserSubmissions = async (req, res) => {
             sortOrder = 'desc'
         } = req.query;
 
-        // Build filter query
         const filterQuery = { user: req.user.id };
         
         if (status && status !== 'all') {
@@ -121,24 +113,19 @@ export const getUserSubmissions = async (req, res) => {
             }
         }
 
-        // Calculate skip value for pagination
         const skip = (page - 1) * limit;
 
-        // Build sort object
         const sortObject = {};
         sortObject[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
-        // Get submissions with pagination
         const submissions = await Submission.find(filterQuery)
             .populate('problem', 'title difficulty categories rating')
             .sort(sortObject)
             .skip(skip)
             .limit(Number(limit));
 
-        // Get total count for pagination
         const total = await Submission.countDocuments(filterQuery);
 
-        // Get user statistics
         const userStats = await Submission.getUserStats(req.user.id);
 
         res.status(StatusCodes.OK).json({
@@ -167,12 +154,10 @@ export const getUserSubmissions = async (req, res) => {
     }
 };
 
-// Get user statistics
 export const getUserStats = async (req, res) => {
     try {
         const userStats = await Submission.getUserStats(req.user.id);
         
-        // Get difficulty-wise statistics
         const difficultyStats = await Submission.aggregate([
             {
                 $match: { user: new mongoose.Types.ObjectId(req.user.id) }
@@ -201,7 +186,6 @@ export const getUserStats = async (req, res) => {
             }
         ]);
 
-        // Get category-wise statistics
         const categoryStats = await Submission.aggregate([
             {
                 $match: { user: new mongoose.Types.ObjectId(req.user.id) }
@@ -254,13 +238,11 @@ export const getUserStats = async (req, res) => {
     }
 };
 
-// Get user's solved problems
 export const getSolvedProblems = async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
         const skip = (page - 1) * limit;
 
-        // Get problems that user has solved
         const solvedProblems = await Submission.aggregate([
             {
                 $match: {
@@ -297,8 +279,7 @@ export const getSolvedProblems = async (req, res) => {
                 $limit: Number(limit)
             }
         ]);
-
-        // Get total count
+            
         const total = await Submission.aggregate([
             {
                 $match: {

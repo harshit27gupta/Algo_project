@@ -1,18 +1,9 @@
 import ErrorResponse from '../utils/errorResponse.js';
 
-// Centralized error handling middleware
 const errorHandler = (err, req, res, next) => {
-    console.log(`💥 [ERROR_HANDLER] Error occurred:`, err.message);
-    console.log(`💥 [ERROR_HANDLER] Stack trace:`, err.stack);
-    console.log(`💥 [ERROR_HANDLER] Request: ${req.method} ${req.url}`);
-    
     let error = { ...err };
     error.message = err.message;
 
-    // Log to console for dev
-    console.error(err);
-
-    // Handle specific error types
     if (err.name === 'CastError') {
         const message = `Resource not found`;
         error = new ErrorResponse(message, 404);

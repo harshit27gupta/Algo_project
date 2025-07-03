@@ -62,7 +62,9 @@ export default function RecentSubmissions({ problemId, refreshTrigger }) {
           )}
           <div className="recent-submission-details">
             <span>Test Cases: {sub.testCasesPassed}/{sub.totalTestCases}</span>
-            {sub.errorMessage && <span className="error-message">Error: {sub.errorMessage}</span>}
+            {sub.status !== 'accepted' && sub.errorMessage && (
+              <span className="error-message">Error: {sub.errorMessage}</span>
+            )}
           </div>
         </div>
       ))}

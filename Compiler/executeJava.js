@@ -14,12 +14,10 @@ const executeJava = (filePath, inputFilePath = null) => {
     const classFile = path.join(dir, `${jobId}.class`);
 
     return new Promise((resolve, reject) => {
-        // Step 1: Compile with timeout
         const compileProcess = exec(`javac "${filePath}"`, { timeout: 10000 }, (compileErr, compileStdout, compileStderr) => {
             if (compileErr) {
                 setTimeout(() => { 
                     try { 
-                        // Clean up entire directory for Java submissions
                         if (dir.includes('java_')) {
                             if (fs.existsSync(dir)) {
                                 fs.rmSync(dir, { recursive: true, force: true });
@@ -34,7 +32,6 @@ const executeJava = (filePath, inputFilePath = null) => {
                 console.log('Java compilation error - compileStderr:', compileStderr);
                 console.log('Java compilation error - compileErr:', compileErr);
                 
-                // Enhanced error handling for Java-specific issues
                 let errorMessage = compileStderr;
                 if (compileStderr.includes('class not found') || compileStderr.includes('cannot find symbol')) {
                     errorMessage = 'Class not found error: Please ensure your class name matches the file name and all required classes are properly defined.';
@@ -49,7 +46,6 @@ const executeJava = (filePath, inputFilePath = null) => {
                 return reject({ error: errorMessage, stderr: compileStderr });
             }
             
-            // Step 2: Run with timeout
             let runCmd = `java -cp "${dir}" ${jobId}`;
             if (inputFilePath) {
                 runCmd = `java -cp "${dir}" ${jobId} < "${inputFilePath}"`;
@@ -60,7 +56,6 @@ const executeJava = (filePath, inputFilePath = null) => {
                 const execTime = Date.now() - startTime;
                 setTimeout(() => { 
                     try { 
-                        // Clean up entire directory for Java submissions
                         if (dir.includes('java_')) {
                             if (fs.existsSync(dir)) {
                                 fs.rmSync(dir, { recursive: true, force: true });
@@ -82,8 +77,7 @@ const executeJava = (filePath, inputFilePath = null) => {
                 if (runErr) {
                     console.log('Java runtime error - runStderr:', runStderr);
                     console.log('Java runtime error - runErr:', runErr);
-                    
-                    // Enhanced runtime error handling
+                        
                     let errorMessage = runStderr;
                     if (runStderr.includes('NoClassDefFoundError') || runStderr.includes('ClassNotFoundException')) {
                         errorMessage = 'Class not found at runtime: The compiled class could not be found. This may be due to a class name mismatch.';

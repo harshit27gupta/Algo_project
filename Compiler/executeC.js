@@ -15,17 +15,13 @@ const executeC = (filePath, inputFilePath = null) => {
   const outPath = path.join(outputPath, outputFileName);
 
   return new Promise((resolve, reject) => {
-    // Step 1: Compile
     exec(`gcc -Werror=return-type  "${filePath}" -o "${outPath}"`, (compileErr, compileStdout, compileStderr) => {
       if (compileErr) {
-        console.log('C compilation error - compileStderr:', compileStderr);
-        console.log('C compilation error - compileErr:', compileErr);
         setTimeout(() => { try { fs.unlinkSync(filePath); } catch (e) {
           console.log("Error deleting file:", e);
         } }, 20000);
         return reject({ error: compileStderr, stderr: compileStderr });
-      }
-      // Step 2: Run
+      }   
       let runCmd = `"${outPath}"`;
       if (inputFilePath) {
         runCmd = `"${outPath}" < "${inputFilePath}"`;
@@ -40,8 +36,6 @@ const executeC = (filePath, inputFilePath = null) => {
           console.log("Error deleting output file:", e);
         } }, 20000);
         if (runErr) {
-          console.log('C runtime error - runStderr:', runStderr);
-          console.log('C runtime error - runErr:', runErr);
           return reject({ error: runStderr, stderr: runStderr });
         }
         resolve({ stdout: runStdout, stderr: runStderr, execTime });

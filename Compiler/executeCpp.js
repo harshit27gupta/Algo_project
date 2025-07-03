@@ -14,16 +14,13 @@ const executeCpp = (filePath, inputFilePath = null) => {
   const outPath = path.join(outputPath, outputFileName);
 
   return new Promise((resolve, reject) => {
-    // Step 1: Compile
     exec(`g++ -Werror=return-type   "${filePath}" -o "${outPath}"`, (compileErr, compileStdout, compileStderr) => {
       if (compileErr) {
-        // Compilation error: return only the compiler's stderr
         setTimeout(() => { try { fs.unlinkSync(filePath); } catch (e) {
           console.log("Error deleting file:", e);
         } }, 20000);
         return reject({ error: compileStderr, stderr: compileStderr });
-      }
-      // Step 2: Run
+      } 
       let runCmd = `"${outPath}"`;
       if (inputFilePath) {
         runCmd = `"${outPath}" < "${inputFilePath}"`;
