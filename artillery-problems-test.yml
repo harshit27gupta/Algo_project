@@ -1,0 +1,16 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 10
+      arrivalRate: 15  # 15 users per second for 10 seconds = 150 users
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+
+scenarios:
+  - name: "Problems Load Test"
+    weight: 100
+    flow:
+      - get:
+          url: "/api/v1/problems"
+      - think: 1  # Wait 1 second between requests 

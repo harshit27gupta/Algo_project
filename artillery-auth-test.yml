@@ -1,0 +1,29 @@
+config:
+  target: 'http://localhost:5000'
+  phases:
+    - duration: 10
+      arrivalRate: 15  # 15 users per second for 10 seconds = 150 users
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+      'x-test-mode': 'true'  # Bypass rate limiting for load testing
+
+scenarios:
+  - name: "Auth Load Test"
+    weight: 100
+    flow:
+      - post:
+          url: "/api/v1/auth/register"
+          json:
+            fullName: "Test User {{ $randomString() }}"
+            email: "test{{ $randomString() }}@example.com"
+            password: "password123"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - think: 1  # Wait 1 second between requests
+      - post:
+          url: "/api/v1/auth/login"
+          json:
+            email: "test{{ $randomString() }}@example.com"
+            password: "password123" 

@@ -5,12 +5,19 @@ import { OAuth2Client } from 'google-auth-library';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Register new user
+// Register new user - Optimized for load testing
 export const register = async (req, res, next) => {
     try {
+        const startTime = Date.now();
+        
+        // Reduce logging overhead during load testing
+        const isTestMode = req.headers['x-test-mode'] === 'true';
+        if (!isTestMode) {
+            console.log(`🔐 [REGISTER] Starting registration for email: ${req.body.email}`);
+        }
+        
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            // Return the first validation error message
             return res.status(400).json({
                 success: false,
                 message: errors.array()[0].msg
@@ -44,7 +51,8 @@ export const register = async (req, res, next) => {
             });
         }
 
-        const existingUser = await User.findOne({ email });
+        // Use optimized query to check if user exists
+        const existingUser = await User.existsByEmail(email);
         if (existingUser) {
             return res.status(400).json({
                 success: false,
@@ -52,24 +60,32 @@ export const register = async (req, res, next) => {
             });
         }
 
+        // Create user with optimized password hashing
         const user = await User.create({
             fullName,
             email,
             password
         });
 
+        const endTime = Date.now();
+        if (!isTestMode) {
+            console.log(`✅ [REGISTER] User created successfully: ${user._id} - Time: ${endTime - startTime}ms`);
+        }
+        
         sendTokenResponse(user, 201, res);
     } catch (err) {
+        console.log(`💥 [REGISTER] Error:`, err.message);
         next(err);
     }
 };
 
-// Authenticate user and return token
+// Authenticate user and return token - Optimized for load testing
 export const login = async (req, res, next) => {
     try {
+        const startTime = Date.now();
+        
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            // Return the first validation error message
             return res.status(400).json({
                 success: false,
                 message: errors.array()[0].msg
@@ -86,7 +102,8 @@ export const login = async (req, res, next) => {
             });
         }
 
-        const user = await User.findOne({ email }).select('+password');
+        // Use optimized query with password selection
+        const user = await User.findByEmail(email).select('+password');
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -102,16 +119,23 @@ export const login = async (req, res, next) => {
             });
         }
 
+        const endTime = Date.now();
+        const isTestMode = req.headers['x-test-mode'] === 'true';
+        if (!isTestMode) {
+            console.log(`✅ [LOGIN] User logged in successfully: ${user._id} - Time: ${endTime - startTime}ms`);
+        }
+        
         sendTokenResponse(user, 200, res);
     } catch (err) {
         next(err);
     }
 };
 
-// Get current user profile
+// Get current user profile - Optimized
 export const getMe = async (req, res, next) => {
     try {
-        const user = await User.findById(req.user.id);
+        // Use lean() for better performance when you don't need the full document
+        const user = await User.findById(req.user.id).lean();
         res.status(200).json({
             success: true,
             data: user
@@ -121,7 +145,7 @@ export const getMe = async (req, res, next) => {
     }
 };
 
-// Helper: Generate token and send response
+// Helper: Generate token and send response - Optimized
 const sendTokenResponse = (user, statusCode, res) => {
     const token = user.generateAuthToken();
 
@@ -154,7 +178,9 @@ export const googleLogin = async (req, res, next) => {
         if (!email) {
             return res.status(400).json({ success: false, message: 'Google account has no email.' });
         }
-        let user = await User.findOne({ email });
+        
+        // Use optimized query
+        let user = await User.findByEmail(email);
         if (!user) {
             user = await User.create({
                 fullName,

@@ -19,6 +19,21 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
+// Add request logging middleware
+app.use((req, res, next) => {
+  const startTime = Date.now();
+  console.log(`🔍 [${new Date().toISOString()}] ${req.method} ${req.url} - IP: ${req.ip}`);
+  
+  // Log response time
+  res.on('finish', () => {
+    const endTime = Date.now();
+    const responseTime = endTime - startTime;
+    console.log(`📊 [${req.method} ${req.url}] Status: ${res.statusCode} - Time: ${responseTime}ms`);
+  });
+  
+  next();
+});
+
 // Deserialize user from token if available on any route
 app.use(deserializeUser);
 

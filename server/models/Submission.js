@@ -29,12 +29,12 @@ const submissionSchema = new mongoose.Schema({
         default: 'wrong_answer'
     },
     executionTime: {
-        type: Number, // in milliseconds
+        type: Number,
         default: 0,
         min: [0, 'Execution time cannot be negative']
     },
     memoryUsed: {
-        type: Number, // in MB
+        type: Number,
         default: 0,
         min: [0, 'Memory usage cannot be negative']
     },
@@ -57,28 +57,24 @@ const submissionSchema = new mongoose.Schema({
         default: Date.now
     }
 }, {
-    timestamps: true // Automatically manage createdAt and updatedAt
+    timestamps: true
 });
 
-// Indexes for better query performance
 submissionSchema.index({ user: 1, problem: 1 });
 submissionSchema.index({ user: 1, status: 1 });
 submissionSchema.index({ problem: 1, status: 1 });
 submissionSchema.index({ user: 1, submittedAt: -1 });
 submissionSchema.index({ problem: 1, submittedAt: -1 });
 
-// Virtual for success rate
 submissionSchema.virtual('successRate').get(function() {
     if (this.totalTestCases === 0) return 0;
     return Math.round((this.testCasesPassed / this.totalTestCases) * 100);
 });
 
-// Virtual for execution time in seconds
 submissionSchema.virtual('executionTimeSeconds').get(function() {
     return (this.executionTime / 1000).toFixed(3);
 });
 
-// Pre-save middleware to validate test cases
 submissionSchema.pre('save', function(next) {
     if (this.testCasesPassed > this.totalTestCases) {
         return next(new Error('Test cases passed cannot exceed total test cases'));
@@ -86,24 +82,21 @@ submissionSchema.pre('save', function(next) {
     next();
 });
 
-// Static method to get user's best submission for a problem
 submissionSchema.statics.getBestSubmission = function(userId, problemId) {
     return this.findOne({
         user: userId,
         problem: problemId,
         status: 'accepted'
-    }).sort({ submittedAt: 1 }); // First accepted submission
+    }).sort({ submittedAt: 1 });
 };
 
-// Static method to get user's latest submission for a problem
 submissionSchema.statics.getLatestSubmission = function(userId, problemId) {
     return this.findOne({
         user: userId,
         problem: problemId
-    }).sort({ submittedAt: -1 }); // Most recent submission
+    }).sort({ submittedAt: -1 });
 };
 
-// Static method to get user's problem status
 submissionSchema.statics.getUserProblemStatus = function(userId, problemId) {
     return this.aggregate([
         {
@@ -146,7 +139,6 @@ submissionSchema.statics.getUserProblemStatus = function(userId, problemId) {
     ]);
 };
 
-// Static method to get user's submission statistics
 submissionSchema.statics.getUserStats = function(userId) {
     return this.aggregate([
         {
@@ -181,7 +173,6 @@ submissionSchema.statics.getUserStats = function(userId) {
     ]);
 };
 
-// Static method to get problem submission statistics
 submissionSchema.statics.getProblemStats = function(problemId) {
     return this.aggregate([
         {
@@ -200,12 +191,10 @@ submissionSchema.statics.getProblemStats = function(problemId) {
     ]);
 };
 
-// Instance method to check if submission is successful
 submissionSchema.methods.isSuccessful = function() {
     return this.status === 'accepted';
 };
 
-// Instance method to get formatted execution time
 submissionSchema.methods.getFormattedExecutionTime = function() {
     if (this.executionTime < 1000) {
         return `${this.executionTime}ms`;
@@ -213,7 +202,6 @@ submissionSchema.methods.getFormattedExecutionTime = function() {
     return `${(this.executionTime / 1000).toFixed(3)}s`;
 };
 
-// Instance method to get formatted memory usage
 submissionSchema.methods.getFormattedMemoryUsage = function() {
     if (this.memoryUsed < 1024) {
         return `${this.memoryUsed}MB`;

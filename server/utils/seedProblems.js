@@ -57,10 +57,10 @@ const testProblems = [
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <vector>\nusing namespace std;\nvector<int> twoSum(vector<int>& nums, int target) {\n    // Your code here\n}`,
-            javascript: `function twoSum(nums, target) {\n  // Your code here\n}`,
-            java: `public class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        // Your code here\n    }\n}`,
-            c: `#include <stdlib.h>\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    // Your code here\n    *returnSize = 0;\n    return NULL;\n}`
+            cpp: `#include <vector>\nusing namespace std;\nvector<int> twoSum(vector<int>& nums, int target) {\n    \n}`,
+            javascript: `function twoSum(nums, target) {\n  \n}`,
+            java: `public class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        \n    }\n}`,
+            c: `#include <stdlib.h>\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    \n    *returnSize = 0;\n    return NULL;\n}`
         },
         functionSignature: {
             cpp: "vector<int> twoSum(vector<int>& nums, int target)",
@@ -121,10 +121,10 @@ const testProblems = [
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <vector>\nusing namespace std;\nvector<int> addTwoNumbers(vector<int>& l1, vector<int>& l2) {\n    // Your code here\n}`,
-            javascript: `function addTwoNumbers(l1, l2) {\n  // Your code here\n}`,
-            java: `public class Solution {\n    public int[] addTwoNumbers(int[] l1, int[] l2) {\n        // Your code here\n    }\n}`,
-            c: `#include <stdlib.h>\nint* addTwoNumbers(int* l1, int l1Size, int* l2, int l2Size, int* returnSize) {\n    // Your code here\n    *returnSize = 0;\n    return NULL;\n}`
+            cpp: `#include <vector>\nusing namespace std;\nvector<int> addTwoNumbers(vector<int>& l1, vector<int>& l2) {\n    \n}`,
+            javascript: `function addTwoNumbers(l1, l2) {\n  \n}`,
+            java: `public class Solution {\n    public int[] addTwoNumbers(int[] l1, int[] l2) {\n        \n    }\n}`,
+            c: `#include <stdlib.h>\nint* addTwoNumbers(int* l1, int l1Size, int* l2, int l2Size, int* returnSize) {\n    \n    *returnSize = 0;\n    return NULL;\n}`
         },
         functionSignature: {
             cpp: "vector<int> addTwoNumbers(vector<int>& l1, vector<int>& l2)",
@@ -190,10 +190,10 @@ const testProblems = [
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <string>\nusing namespace std;\nint lengthOfLongestSubstring(string s) {\n    // Your code here\n}`,
-            javascript: `function lengthOfLongestSubstring(s) {\n  // Your code here\n}`,
-            java: `public class Solution {\n    public int lengthOfLongestSubstring(String s) {\n        // Your code here\n    }\n}`,
-            c: `#include <string.h>\nint lengthOfLongestSubstring(char* s) {\n    // Your code here\n}`
+            cpp: `#include <string>\nusing namespace std;\nint lengthOfLongestSubstring(string s) {\n    \n}`,
+            javascript: `function lengthOfLongestSubstring(s) {\n  \n}`,
+            java: `public class Solution {\n    public int lengthOfLongestSubstring(String s) {\n        \n    }\n}`,
+            c: `#include <string.h>\nint lengthOfLongestSubstring(char* s) {\n    \n}`
         },
         functionSignature: {
             cpp: "int lengthOfLongestSubstring(string s)",
@@ -254,10 +254,10 @@ const testProblems = [
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <vector>\nusing namespace std;\nvector<vector<int>> levelOrder(TreeNode* root) {\n    // Your code here\n}`,
-            javascript: `function levelOrder(root) {\n  // Your code here\n}`,
-            java: `public class Solution {\n    public List<List<Integer>> levelOrder(TreeNode root) {\n        // Your code here\n         }\n}`,
-            c: `#include <stdlib.h>\nstruct TreeNode { int val; struct TreeNode *left; struct TreeNode *right; };\nint** levelOrder(struct TreeNode* root, int* returnSize, int** returnColumnSizes) {\n    // Your code here\n}`
+            cpp: `#include <vector>\nusing namespace std;\nvector<vector<int>> levelOrder(TreeNode* root) {\n    \n}`,
+            javascript: `function levelOrder(root) {\n  \n}`,
+            java: `public class Solution {\n    public List<List<Integer>> levelOrder(TreeNode root) {\n        \n         }\n}`,
+            c: `#include <stdlib.h>\nstruct TreeNode { int val; struct TreeNode *left; struct TreeNode *right; };\nint** levelOrder(struct TreeNode* root, int* returnSize, int** returnColumnSizes) {\n    \n}`
         },
         functionSignature: {
             cpp: "vector<vector<int>> levelOrder(TreeNode* root)",
@@ -319,10 +319,10 @@ const testProblems = [
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <vector>\nusing namespace std;\nListNode* mergeKLists(vector<ListNode*>& lists) {\n    // Your code here\n}`,
-            javascript: `function mergeKLists(lists) {\n  // Your code here\n}`,
-            java: `public class Solution {\n    public ListNode mergeKLists(ListNode[] lists) {\n        // Your code here\n    }\n}`,
-            c: `struct ListNode { int val; struct ListNode *next; };\nstruct ListNode* mergeKLists(struct ListNode** lists, int listsSize) {\n    // Your code here\n}`
+            cpp: `#include <vector>\nusing namespace std;\nListNode* mergeKLists(vector<ListNode*>& lists) {\n    \n}`,
+            javascript: `function mergeKLists(lists) {\n  \n}`,
+            java: `public class Solution {\n    public ListNode mergeKLists(ListNode[] lists) {\n        \n    }\n}`,
+            c: `struct ListNode { int val; struct ListNode *next; };\nstruct ListNode* mergeKLists(struct ListNode** lists, int listsSize) {\n    \n}`
         },
         functionSignature: {
             cpp: "ListNode* mergeKLists(vector<ListNode*>& lists)",

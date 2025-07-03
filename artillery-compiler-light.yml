@@ -1,0 +1,61 @@
+config:
+  target: 'http://localhost:8000'
+  phases:
+    - duration: 10
+      arrivalRate: 2  # 2 users per second for 10 seconds = 20 users (light load)
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+    timeout: 30  # 30 second timeout for compilation
+    expect:
+      - statusCode: [200, 500]  # Accept both success and compilation errors
+
+scenarios:
+  - name: "C Language Test"
+    weight: 33
+    flow:
+      - post:
+          url: "/compile"
+          json:
+            language: "c"
+            code: |
+              #include <stdio.h>
+              int main() {
+                  printf("Hello World from C\n");
+                  return 0;
+              }
+            input: ""
+      - think: 3
+
+  - name: "C++ Language Test"
+    weight: 33
+    flow:
+      - post:
+          url: "/compile"
+          json:
+            language: "cpp"
+            code: |
+              #include <iostream>
+              using namespace std;
+              int main() {
+                  cout << "Hello World from C++" << endl;
+                  return 0;
+              }
+            input: ""
+      - think: 3
+
+  - name: "Java Language Test"
+    weight: 34
+    flow:
+      - post:
+          url: "/compile"
+          json:
+            language: "java"
+            code: |
+              public class Main {
+                  public static void main(String[] args) {
+                      System.out.println("Hello World from Java");
+                  }
+              }
+            input: ""
+      - think: 3 

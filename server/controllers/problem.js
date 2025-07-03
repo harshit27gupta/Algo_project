@@ -41,6 +41,9 @@ export const createProblem = async (req, res) => {
 // Get all problems with user status
 export const getAllProblems = async (req, res) => {
     try {
+        const startTime = Date.now();
+        console.log(`📋 [GET_PROBLEMS] Request from user: ${req.user ? req.user.id : 'anonymous'} - IP: ${req.ip}`);
+        
         // Get all published problems
         const problems = await Problem.find({ isPublished: true })
             .populate('author', 'fullName');
@@ -109,6 +112,9 @@ export const getAllProblems = async (req, res) => {
             }));
         }
 
+        const endTime = Date.now();
+        const responseTime = endTime - startTime;
+        console.log(`✅ [GET_PROBLEMS] Returning ${problemsWithStatus.length} problems - Response time: ${responseTime}ms`);
         res.status(StatusCodes.OK).json({
             success: true,
             data: problemsWithStatus

@@ -6,9 +6,6 @@ import { authLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
-
-
-// Input validation rules
 const registerValidation = [
     body('fullName').notEmpty().withMessage('Name is required'),
     body('email').isEmail().withMessage('Please include a valid email'),
@@ -20,12 +17,9 @@ const loginValidation = [
     body('password').exists().withMessage('Password is required')
 ];
 
-// Auth routes with rate limiting
 router.post('/register', authLimiter, registerValidation, register);
 router.post('/login', authLimiter, loginValidation, login);
 router.get('/me', protect, getMe);
 router.post('/google',authLimiter,googleLogin);
-
-
 
 export default router; 
