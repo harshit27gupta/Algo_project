@@ -9,6 +9,7 @@ import { deserializeUser } from './middleware/auth.js';
 import authRoutes from './routes/auth.js';
 import problemRoutes from './routes/problem.js';
 import userRoutes from './routes/user.js';
+import aiRoutes from './routes/ai.js';
 import { apiLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
@@ -44,6 +45,7 @@ app.use(apiLimiter);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/problems', problemRoutes);
 app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/ai', aiRoutes);
 
 // Error handling middleware (must be after routes)
 app.use(errorHandler);

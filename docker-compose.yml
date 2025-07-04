@@ -7,13 +7,14 @@ services:
       - ./server:/app
     environment:
       - NODE_ENV=production
+      - COMPILER_URL=http://compiler:8000/compile
     depends_on:
       - compiler
 
   compiler:
     build: ./Compiler
     ports:
-      - "5001:5001"
+      - "8000:8000"
     volumes:
       - ./Compiler:/app
     environment:

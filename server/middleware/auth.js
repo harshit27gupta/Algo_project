@@ -31,13 +31,13 @@ export const protect = (req, res, next) => {
     if (req.authError?.type === 'TokenExpiredError') {
         return res.status(401).json({
             success: false,
-            message: 'Your session has expired. Please log in again.'
+            message: 'Your session has expired. Please log in again to use the chatbot and other features.'
         });
     }
 
     return res.status(401).json({
         success: false,
-        message: 'You must be logged in to perform this action. Please log in or sign up.'
+        message: 'Please log in to talk to the AI bot and use this feature.'
     });
 };
 

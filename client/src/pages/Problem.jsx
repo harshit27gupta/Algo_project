@@ -27,6 +27,9 @@ import { saveCode, loadCode, clearCode, hasSavedCode } from '../utils/codePersis
 import './Problem.css';
 import CodeEditor from '../components/CodeEditor';
 import RecentSubmissions from '../components/RecentSubmissions';
+import axios from 'axios';
+import HintModal from '../components/HintModal';
+import '../components/HintModal.css';
 
 // Get userId from localStorage (assume user is stored as JSON with _id)
 let userId = 'guest';
@@ -57,6 +60,11 @@ const Problem = () => {
   const [activeResultTab, setActiveResultTab] = useState(0);
   const [refreshSubmissions, setRefreshSubmissions] = useState(0);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [hintLoading, setHintLoading] = useState(false);
+  const [hintError, setHintError] = useState(null);
+  const [hints, setHints] = useState([]);
+  const [showHintModal, setShowHintModal] = useState(false);
+  const [hintsRemaining, setHintsRemaining] = useState(2);
 
   const languages = [
     { value: 'java', label: 'Java', extension: '.java' },
@@ -175,6 +183,40 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleResetCode]);
 
+  // Fetch hint count on mount or when id changes
+  useEffect(() => {
+    const fetchHintCount = async () => {
+      try {
+        const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api/v1';
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const res = await axios.get(`${API_BASE}/ai/hint-count/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        setHintsRemaining(res.data.data.hintsRemaining);
+      } catch (err) {
+        setHintsRemaining(2); // fallback
+      }
+    };
+    if (id) fetchHintCount();
+  }, [id]);
+
+  // Fetch user hints on problem load
+  useEffect(() => {
+    const fetchHints = async () => {
+      try {
+        const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api/v1';
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const res = await axios.get(`${API_BASE}/ai/hints/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        setHints(res.data.data.hints || []);
+      } catch (err) {
+        setHints([]);
+      }
+    };
+    if (id) fetchHints();
+  }, [id]);
+
   const fetchProblem = async () => {
     try {
       setLoading(true);
@@ -279,6 +321,60 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
       case 'runtime_error': return '#f97316';
       default: return '#6b7280';
     }
+  };
+
+  // Handle Get Hint button click
+  const handleGetHint = async () => {
+    if (!problem) return;
+    if (hints.length >= 2) {
+      toast.info('You have already received the maximum number of hints for this problem.');
+      return;
+    }
+    setHintLoading(true);
+    setHintError(null);
+    try {
+      const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api/v1';
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await axios.post(`${API_BASE}/ai/hint`, {
+        problemId: id,
+        userCode: code,
+        hintNumber: hints.length + 1,
+        problemTitle: problem.title,
+        problemDescription: problem.description,
+        constraints: problem.constraints,
+        examples: problem.examples
+      }, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.data.success) {
+        setHints(prev => [...prev, res.data.data.hint]);
+        setHintsRemaining(res.data.data.hintsRemaining);
+        setShowHintModal(true);
+      } else {
+        setHintError(res.data.message || 'Failed to get hint.');
+      }
+    } catch (err) {
+      setHintError(err.response?.data?.message || 'Failed to get hint.');
+    } finally {
+      setHintLoading(false);
+    }
+  };
+
+  // When opening the modal, fetch hints if empty
+  const handleViewHints = async () => {
+    if (hints.length === 0) {
+      try {
+        const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api/v1';
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const res = await axios.get(`${API_BASE}/ai/hints/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        setHints(res.data.data.hints || []);
+      } catch (err) {
+        setHints([]);
+      }
+    }
+    setShowHintModal(true);
   };
 
   if (loading) {
@@ -634,10 +730,12 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
           </div>
 
           <div className="code-editor">
-            <CodeEditor 
-              language={language === 'cpp' ? 'cpp' : language} 
-              code={code} 
-              onChange={setCode} 
+            <CodeEditor
+              code={code}
+              setCode={setCode}
+              language={language}
+              problemId={id}
+              hasUnsavedChanges={hasUnsavedChanges}
             />
           </div>
 
@@ -680,7 +778,48 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
         </div>
       </div>
 
+      {/* Hint Controls - centered below editor */}
+      <div className="hint-controls-below">
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end' }}>
+          {hintsRemaining >=0 && hintsRemaining <= 2 && (
+            <span className="hint-count-label" style={{ marginBottom: '2px', fontWeight: 600, color: '#f7b42c' }}>{hintsRemaining} left</span>
+          )}
+          <button
+            className="hint-btn"
+            onClick={handleGetHint}
+            disabled={hintLoading || hints.length >= 2 || hintsRemaining <= 0}
+            title={hintsRemaining >0 ? `Get a hint (${hintsRemaining} left)` : 'No hints remaining'}
+          >
+            <FaLightbulb style={{ marginRight: 6 }} />
+            {hintLoading ? 'Getting Hint...' : 'Get Hint'}
+          </button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end' }}>
+          <button
+            className="view-hints-btn"
+            onClick={handleViewHints}
+            disabled={hints.length === 0}
+            title={hints.length > 0 ? 'View your hints' : 'No hints received yet'}
+            style={{ marginTop: '24px' }}
+          >
+            <FaLightbulb style={{ marginRight: 6 }} />
+            View Hints
+          </button>
+        </div>
+      </div>
+
       <RecentSubmissions problemId={id} refreshTrigger={refreshSubmissions} />
+
+      {/* Hint Modal */}
+      {showHintModal && (
+        <HintModal
+          hints={hints}
+          hintError={hintError}
+          loading={hintLoading}
+          onClose={() => setShowHintModal(false)}
+          hintsRemaining={2 - hints.length}
+        />
+      )}
     </div>
   );
 };

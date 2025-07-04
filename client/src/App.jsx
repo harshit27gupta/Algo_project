@@ -5,6 +5,7 @@ import Problem from './pages/Problem';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
 import ForgotPassword from './components/auth/ForgotPassword';
+import Chatbot from './components/Chatbot';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -21,6 +22,7 @@ function App() {
           <Route path="/problem/:id" element={<Problem />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
+        <Chatbot />
       </Router>
       <ToastContainer position="top-center" autoClose={1500} />
     </>
