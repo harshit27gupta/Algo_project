@@ -52,7 +52,7 @@ userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) return next();
     
     try {
-        const saltRounds = process.env.NODE_ENV === 'production' ? 10 : 8;
+        const saltRounds = 10;
         const salt = await bcrypt.genSalt(saltRounds);
         this.password = await bcrypt.hash(this.password, salt);
         next();
@@ -80,5 +80,8 @@ userSchema.statics.findByEmail = function(email) {
 userSchema.statics.existsByEmail = function(email) {
     return this.exists({ email: email.toLowerCase() });
 };
+
+// Example: Set connection pool size in your mongoose.connect call (e.g. in server/index.js):
+// mongoose.connect(uri, { maxPoolSize: 20, ... })
 
 export default mongoose.model('User', userSchema); 

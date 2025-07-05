@@ -1,15 +1,18 @@
 services:
   client:
-    build: ./client
+    build: 
+      context: ./client
+      dockerfile: Dockerfile.dev
     ports:
-        - "3000:80"
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
     depends_on:
       - server
       - compiler
-    env_file:
-      - ./client/.env
-    environment:
-      - NODE_ENV=production
 
   server:
     build: ./server
@@ -17,13 +20,13 @@ services:
       - "5000:5000"
     volumes:
       - ./server:/app
-    env_file:
-      - ./server/.env
+      - /app/node_modules
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - COMPILER_URL=http://compiler:8000/compile
     depends_on:
       - compiler
+    command: npm run server
 
   compiler:
     build: ./Compiler
@@ -31,7 +34,7 @@ services:
       - "8000:8000"
     volumes:
       - ./Compiler:/app
-    env_file:
-      - ./Compiler/.env
+      - /app/node_modules
     environment:
-      - NODE_ENV=production 
+      - NODE_ENV=development
+    command: npm run compiler 

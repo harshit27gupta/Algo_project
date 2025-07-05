@@ -93,7 +93,7 @@ export const login = async (req, res, next) => {
             });
         }
 
-        const user = await User.findByEmail(email).select('+password');
+        let user = await User.findByEmail(email).select('+password').lean();
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -101,7 +101,7 @@ export const login = async (req, res, next) => {
             });
         }
 
-        const isMatch = await user.comparePassword(password);
+        const isMatch = await require('bcryptjs').compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({
                 success: false,
