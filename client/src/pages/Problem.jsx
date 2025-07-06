@@ -187,7 +187,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
   useEffect(() => {
     const fetchHintCount = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/api/v1';
+        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         const res = await axios.get(`${API_BASE}/ai/hint-count/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
