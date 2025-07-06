@@ -215,3 +215,21 @@ export const getRecentSubmissions = async (problemId, limit = 100) => {
   const res = await authInstance.get(`/problems/${problemId}/recent-submissions?limit=${limit}`);
   return res.data;
 };
+
+export const runCustomTest = async (problemId, code, language, customInput) => {
+  try {
+    const authInstance = createAuthInstance();
+    const res = await authInstance.post(`/problems/${problemId}/run`, {
+      code,
+      language,
+      customInput
+    });
+    return res.data;
+  } catch (err) {
+    throw new Error(
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      'Failed to run custom test. Please try again.'
+    );
+  }
+};

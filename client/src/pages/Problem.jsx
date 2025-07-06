@@ -19,10 +19,11 @@ import {
   FaExclamationTriangle,
   FaCheckCircle,
   FaSpinner,
-  FaUndo
+  FaUndo,
+  FaPlus
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { getProblem, submitSolution, runCode } from '../services/api';
+import { getProblem, submitSolution, runCode, runCustomTest } from '../services/api';
 import { saveCode, loadCode, clearCode, hasSavedCode } from '../utils/codePersistence';
 import './Problem.css';
 import CodeEditor from '../components/CodeEditor';
@@ -65,6 +66,9 @@ const Problem = () => {
   const [hints, setHints] = useState([]);
   const [showHintModal, setShowHintModal] = useState(false);
   const [hintsRemaining, setHintsRemaining] = useState(2);
+  const [customInput, setCustomInput] = useState('');
+  const [customTestResult, setCustomTestResult] = useState(null);
+  const [runningCustomTest, setRunningCustomTest] = useState(false);
 
   const languages = [
     { value: 'java', label: 'Java', extension: '.java' },
@@ -101,6 +105,12 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
   useEffect(() => {
     fetchProblem();
   }, [id]);
+
+  useEffect(() => {
+    if (problem && problem.customTestCaseInputTemplate && !customInput) {
+      setCustomInput(problem.customTestCaseInputTemplate);
+    }
+  }, [problem]);
 
   // Function to get the appropriate template code
   const getTemplateCode = useCallback(() => {
@@ -232,6 +242,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
   };
 
   const handleRunCode = async () => {
+    console.log('[RunButton] handleRunCode called');
     if (!code.trim()) {
       toast.error('Please write some code before running');
       return;
@@ -240,8 +251,9 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     try {
       setRunningCode(true);
       setRunResult(null);
-      
+      console.log('[RunButton] Sending request to /run:', { id, code, language });
       const response = await runCode(id, code, language);
+      console.log('[RunButton] Response:', response);
       setRunResult(response.data);
       setActiveTab('run_result'); // Switch to the result tab
       toast.success('Code executed successfully!');
@@ -377,6 +389,33 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     setShowHintModal(true);
   };
 
+  // Handle custom test execution
+  const handleRunCustomTest = async () => {
+    console.log('[CustomTest] handleRunCustomTest called', customInput);
+    if (!customInput.trim()) {
+      toast.error('Please enter test input');
+      return;
+    }
+
+    try {
+      setRunningCustomTest(true);
+      setCustomTestResult(null);
+      console.log('[CustomTest] Sending request to /run:', { id, code, language, customInput });
+      const response = await runCustomTest(id, code, language, customInput);
+      console.log('[CustomTest] Response:', response);
+      setCustomTestResult(response.data);
+      toast.success('Custom test executed successfully!');
+    } catch (err) {
+      console.error('[CustomTest] Error:', err);
+      toast.error(err.message);
+    } finally {
+      setRunningCustomTest(false);
+    }
+  };
+
+  // Debug log to check setCode before rendering
+  console.log('[DEBUG] setCode:', setCode, 'typeof:', typeof setCode);
+
   if (loading) {
     return (
       <div className="problem-loading">
@@ -485,6 +524,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
               <FaTrophy />
               Submission
             </button>
+
           </div>
 
           <div className="tab-content">
@@ -535,7 +575,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
             {activeTab === 'testcases' && (
               <div className="testcases-content">
                 <div className="testcases-header">
-                  <h3>Public Test Cases</h3>
+                  <h3>Test Cases</h3>
                   <button 
                     className="toggle-testcases"
                     onClick={() => setShowTestCases(!showTestCases)}
@@ -545,31 +585,96 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
                   </button>
                 </div>
 
-                {showTestCases && (
-                  <div className="testcases-list">
-                    {problem.publicTestCases.map((testCase, index) => (
-                      <div key={index} className="testcase-item">
-                        <div className="testcase-header">
-                          <h4>Test Case {index + 1}</h4>
-                        </div>
-                        <div className="testcase-content">
-                          <div className="testcase-input">
-                            <h5>Input:</h5>
-                            <pre>{testCase.input}</pre>
-                          </div>
-                          <div className="testcase-output">
-                            <h5>Expected Output:</h5>
-                            <pre>{testCase.output}</pre>
-                          </div>
-                          {testCase.explanation && (
-                            <div className="testcase-explanation">
-                              <h5>Explanation:</h5>
-                              <p>{testCase.explanation}</p>
-                            </div>
-                          )}
-                        </div>
+                {/* Custom Test Section */}
+                <div className="custom-test-section">
+                  <div className="custom-test-header">
+                    <h4>Custom Test Case</h4>
+                    <p>Test your code with custom input</p>
+                  </div>
+                  
+                  <div className="custom-test-form">
+                    <div className="input-group">
+                      <label>Input:</label>
+                      <textarea
+                        value={customInput}
+                        onChange={(e) => setCustomInput(e.target.value)}
+                        placeholder={problem && problem.customTestCaseInputTemplate ? problem.customTestCaseInputTemplate : 'Enter your test input'}
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <button 
+                      className="run-custom-test-btn"
+                      onClick={() => {
+                        console.log('[CustomTest] Button clicked', customInput);
+                        handleRunCustomTest();
+                      }}
+                      disabled={!customInput.trim() || runningCustomTest}
+                    >
+                      {runningCustomTest ? (
+                        <>
+                          <FaSpinner className="spinner" />
+                          Running...
+                        </>
+                      ) : (
+                        <>
+                          <FaPlay />
+                          Run Custom Test
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  
+                  {customTestResult && (
+                    <div className="custom-test-result">
+                      <h5>Custom Test Result:</h5>
+                      <div className="result-detail">
+                        <span className="detail-label">Input:</span>
+                        <pre className="detail-value">{customInput}</pre>
                       </div>
-                    ))}
+                      <div className="result-detail">
+                        <span className="detail-label">Output:</span>
+                        <pre className="detail-value output">{customTestResult.output}</pre>
+                      </div>
+                      {customTestResult.stderr && (
+                        <div className="result-detail">
+                          <span className="detail-label">Error:</span>
+                          <pre className="detail-value error">{customTestResult.stderr}</pre>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Public Test Cases Section */}
+                {showTestCases && (
+                  <div className="public-testcases-section">
+                    <h4>Public Test Cases</h4>
+                    <div className="testcases-list">
+                      {problem.publicTestCases.map((testCase, index) => (
+                        <div key={index} className="testcase-item">
+                          <div className="testcase-header">
+                            <h5>Test Case {index + 1}</h5>
+                          </div>
+                          <div className="testcase-content">
+                            <div className="testcase-input">
+                              <h6>Input:</h6>
+                              <pre>{testCase.input}</pre>
+                            </div>
+                            <div className="testcase-output">
+                              <h6>Expected Output:</h6>
+                              <pre>{testCase.output}</pre>
+                            </div>
+                            {testCase.explanation && (
+                              <div className="testcase-explanation">
+                                <h6>Explanation:</h6>
+                                <p>{testCase.explanation}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -687,6 +792,8 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
                 </div>
               </div>
             )}
+
+
           </div>
         </div>
 
@@ -730,19 +837,22 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
           </div>
 
           <div className="code-editor">
-            <CodeEditor
-              code={code}
-              setCode={setCode}
-              language={language}
-              problemId={id}
-              hasUnsavedChanges={hasUnsavedChanges}
-            />
+          <CodeEditor
+  code={code}
+  onChange={setCode}
+  language={language}
+  problemId={id}
+  hasUnsavedChanges={hasUnsavedChanges}
+/>
           </div>
 
           <div className="editor-footer">
             <button 
               className="run-button"
-              onClick={handleRunCode}
+              onClick={() => {
+                console.log('[RunButton] Button clicked');
+                handleRunCode();
+              }}
               disabled={runningCode || submitting}
             >
               {runningCode ? (

@@ -68,7 +68,8 @@ const testProblems = [
             java: "public int[] twoSum(int[] nums, int target)",
             c: "int* twoSum(int* nums, int numsSize, int target, int* returnSize)"
         },
-        functionName: "twoSum"
+        functionName: "twoSum",
+        customTestCaseInputTemplate: "nums=[], target="
     },
     {
         title: "Add Two Numbers",
@@ -132,7 +133,8 @@ const testProblems = [
             java: "public int[] addTwoNumbers(int[] l1, int[] l2)",
             c: "int* addTwoNumbers(int* l1, int l1Size, int* l2, int l2Size, int* returnSize)"
         },
-        functionName: "addTwoNumbers"
+        functionName: "addTwoNumbers",
+        customTestCaseInputTemplate: "l1=[], l2=[]"
     },
     {
         title: "Longest Substring Without Repeating Characters",
@@ -201,7 +203,8 @@ const testProblems = [
             java: "public int lengthOfLongestSubstring(String s)",
             c: "int lengthOfLongestSubstring(char* s)"
         },
-        functionName: "lengthOfLongestSubstring"
+        functionName: "lengthOfLongestSubstring",
+        customTestCaseInputTemplate: "s="
     },
     {
         title: "Binary Tree Level Order Traversal",
@@ -265,7 +268,8 @@ const testProblems = [
             java: "public List<List<Integer>> levelOrder(TreeNode root)",
             c: "int** levelOrder(struct TreeNode* root, int* returnSize, int** returnColumnSizes)"
         },
-        functionName: "levelOrder"
+        functionName: "levelOrder",
+        customTestCaseInputTemplate: "root=[]"
     },
     {
         title: "Merge K Sorted Lists",
@@ -330,7 +334,8 @@ const testProblems = [
             java: "public ListNode mergeKLists(ListNode[] lists)",
             c: "struct ListNode* mergeKLists(struct ListNode** lists, int listsSize)"
         },
-        functionName: "mergeKLists"
+            functionName: "mergeKLists",
+        customTestCaseInputTemplate: "lists=[]"
     }
 ];
 

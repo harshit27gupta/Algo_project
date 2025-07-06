@@ -36,6 +36,7 @@ export const createProblem = async (req, res) => {
 };
 
 export const getAllProblems = async (req, res) => {
+  console.log('LOADED: getAllProblems');
     try {
         const startTime = Date.now();
         console.log(`📋 [GET_PROBLEMS] Request from user: ${req.user ? req.user.id : 'anonymous'} - IP: ${req.ip}`);
@@ -380,113 +381,126 @@ function cleanCompilerError(stderr, language, originalUserCode = '') {
 }
 
 export const runCode = async (req, res) => {
+  console.log('LOADED: problem.js');
+  try {
     const { id } = req.params;
-    const { code, language } = req.body;
-
-    if (!code || !language) {
-        throw new ErrorResponse('Code and language are required', StatusCodes.BAD_REQUEST);
+    const { code, language, customInput } = req.body;
+    console.log('[CustomRun] Received request:', { id, code, language, customInput });
+    if (!req.user) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        success: false,
+        message: 'Please log in to use this feature.'
+      });
     }
 
     const problem = await Problem.findById(id);
-
     if (!problem) {
-        throw new ErrorResponse(`Problem with id ${id} not found`, StatusCodes.NOT_FOUND);
+      return res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: 'Problem not found'
+      });
     }
 
-    const supportedLanguages = ['cpp', 'c', 'java'];
-    if (!supportedLanguages.includes(language)) {
-        return res.status(StatusCodes.BAD_REQUEST).json({
-            success: false,
-            message: 'Only C, C++, and Java are supported.'
-        });
-    }
+    const requiredSignature = problem.functionSignature[language];
+    const requiredName = problem.functionName;
 
-    let requiredSignature, requiredName, wrapCodeFn;
-    if (language === 'cpp') {
-      requiredSignature = problem.functionSignature?.get('cpp') || 'vector<int> solution(vector<int>& nums, int target)';
-      requiredName = problem.functionName || 'solution';
-      wrapCodeFn = wrapCppCode;
-    } else if (language === 'c') {
-      requiredSignature = problem.functionSignature?.get('c') || 'int* solution(int* nums, int numsSize, int target, int* returnSize)';
-      requiredName = problem.functionName || 'solution';
-      wrapCodeFn = wrapCCode;
-    } else if (language === 'java') {
-      requiredSignature = problem.functionSignature?.get('java') || 'public int[] solution(int[] nums, int target)';
-      requiredName = problem.functionName || 'solution';
-      wrapCodeFn = wrapJavaCode;
+    let userCodeFixed = code;
+    if (language === 'cpp') userCodeFixed = enforceCppSignature(code, requiredSignature, requiredName);
+    if (language === 'java') {
+      userCodeFixed = enforceJavaSignature(code, requiredSignature, requiredName);
+      userCodeFixed = addJavaImports(userCodeFixed);
     }
+    if (language === 'c') userCodeFixed = enforceCSignature(code, requiredSignature, requiredName);
+
+    const wrapCodeFn = getWrapCodeFunction(language);
     const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
-    const results = [];
-    for (let i = 0; i < problem.publicTestCases.length; i++) {
-        const testCase = problem.publicTestCases[i];
-        let userCodeFixed = code;
-        if (language === 'cpp') userCodeFixed = enforceCppSignature(code, requiredSignature, requiredName);
-        if (language === 'java') {
-          userCodeFixed = enforceJavaSignature(code, requiredSignature, requiredName);
-          userCodeFixed = addJavaImports(userCodeFixed);
-        }
-        if (language === 'c') userCodeFixed = enforceCSignature(code, requiredSignature, requiredName);
-        const wrappedCode = wrapCodeFn(userCodeFixed, testCase.input, requiredName);
-        
-        if (language === 'c') {
-          console.log('WRAPPED C CODE:');
-          console.log(wrappedCode);
-        }
-        
-        try {
-            const compileRes = await axios.post(COMPILER_URL, {
-                language,
-                code: wrappedCode,
-                input: ''
-            }, { timeout: 10000 });
-            console.log('RAW COMPILER STDERR:', compileRes.data.stderr);
-            const errorObj = cleanCompilerError(compileRes.data.stderr || '', language, code);
-            let output = (compileRes.data.stdout || '').trim();
-            if (output.endsWith(',')) output = output.slice(0, -1);
-            const expected = testCase.output.trim();
-            results.push({
-                id: i,
-                input: testCase.input,
-                expected,
-                output,
-                status: output === expected ? 'passed' : 'failed',
-                stderr: errorObj.message,
-                errorLines: errorObj.lines,
-                execTime: compileRes.data.execTime || null
-            });
-        } catch (err) {
-            console.log('RAW COMPILER ERROR:', err);
-            console.log('RAW COMPILER ERROR RESPONSE:', err.response?.data);
-            console.log('RAW COMPILER ERROR STDERR:', err.response?.data?.stderr || err.message);
-            let errorMessage = '';
-            if (err.response?.data?.stderr) {
-                errorMessage = typeof err.response.data.stderr === 'string' 
-                    ? err.response.data.stderr 
-                    : JSON.stringify(err.response.data.stderr);
-            } else if (err.message) {
-                errorMessage = err.message;
-            } else {
-                errorMessage = 'Unknown compilation error';
-            }
-            
-            const errorObj = cleanCompilerError(errorMessage, language, code);
-            results.push({
-                id: i,
-                input: testCase.input,
-                expected: testCase.output.trim(),
-                output: '',
-                status: 'error',
-                stderr: errorObj.message,
-                errorLines: errorObj.lines,
-                execTime: null
-            });
-        }
+
+    // Handle custom test case ONLY if customInput is present and non-empty
+    if (customInput && customInput.trim()) {
+      const wrappedCode = wrapCodeFn(userCodeFixed, customInput, requiredName);
+      try {
+        const compileRes = await axios.post(COMPILER_URL, {
+          language,
+          code: wrappedCode,
+          input: ''
+        }, { timeout: 10000 });
+        const errorObj = cleanCompilerError(compileRes.data.stderr || '', language, code);
+        let output = (compileRes.data.stdout || '').trim();
+        if (output.endsWith(',')) output = output.slice(0, -1);
+        console.log('[CustomRun] Compiler stdout:', compileRes.data.stdout);
+        console.log('[CustomRun] Compiler stderr:', compileRes.data.stderr);
+        console.log('[CustomRun] Cleaned error:', errorObj.message);
+        console.log('[CustomRun] Final output sent to client:', output);
+        return res.status(StatusCodes.OK).json({
+          success: true,
+          data: {
+            input: customInput,
+            output,
+            stderr: errorObj.message,
+            execTime: compileRes.data.execTime || null
+          }
+        });
+      } catch (err) {
+        console.log('[CustomRun] Compiler error:', err?.response?.data || err.message);
+        return res.status(StatusCodes.OK).json({
+          success: false,
+          data: {
+            input: customInput,
+            output: '',
+            stderr: err?.response?.data || err.message,
+            execTime: null
+          }
+        });
+      }
     }
 
-    res.status(StatusCodes.OK).json({
-        success: true,
-        data: results
+    // Otherwise, run all public test cases
+    let results = [];
+    for (let i = 0; i < problem.publicTestCases.length; i++) {
+      const testCase = problem.publicTestCases[i];
+      console.log('[CustomRun] Running public test case:', testCase);
+      const wrappedCode = wrapCodeFn(userCodeFixed, testCase.input, requiredName);
+      try {
+        const compileRes = await axios.post(COMPILER_URL, {
+          language,
+          code: wrappedCode,
+          input: ''
+        }, { timeout: 10000 });
+        const errorObj = cleanCompilerError(compileRes.data.stderr || '', language, code);
+        let output = (compileRes.data.stdout || '').trim();
+        if (output.endsWith(',')) output = output.slice(0, -1);
+        const expected = testCase.output.trim();
+        results.push({
+          id: i,
+          input: testCase.input,
+          expected,
+          output,
+          status: output === expected ? 'passed' : 'failed',
+          stderr: errorObj.message,
+          errorLines: errorObj.lines,
+          execTime: compileRes.data.execTime || null
+        });
+      } catch (err) {
+        results.push({
+          id: i,
+          input: testCase.input,
+          expected: testCase.output.trim(),
+          output: '',
+          status: 'error',
+          stderr: err?.response?.data || err.message,
+          errorLines: [],
+          execTime: null
+        });
+      }
+    }
+    return res.status(StatusCodes.OK).json(results);
+  } catch (error) {
+    console.error('[runCode] Error:', error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: 'Failed to run code.'
     });
+  }
 };
 
 export const submitSolution = async (req, res) => {
@@ -919,4 +933,17 @@ function addJavaImports(userCode) {
   }
   
   return userCode;
+}
+
+function getWrapCodeFunction(language) {
+  switch (language) {
+    case 'cpp':
+      return wrapCppCode;
+    case 'java':
+      return wrapJavaCode;
+    case 'c':
+      return wrapCCode;
+    default:
+      throw new Error(`Unsupported language: ${language}`);
+  }
 } 

@@ -423,6 +423,119 @@
   line-height: 1.6;
 }
 
+/* Custom Test Section Styles */
+.custom-test-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.custom-test-header {
+  margin-bottom: 16px;
+}
+
+.custom-test-header h4 {
+  margin: 0 0 6px 0;
+  color: #374151;
+  font-weight: 600;
+}
+
+.custom-test-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.custom-test-form {
+  margin-bottom: 16px;
+}
+
+.input-group {
+  margin-bottom: 12px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.input-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.input-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.run-custom-test-btn {
+  background: #059669;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.run-custom-test-btn:hover:not(:disabled) {
+  background: #047857;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.run-custom-test-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.custom-test-result {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 16px;
+  background: white;
+  margin-top: 16px;
+}
+
+.custom-test-result h5 {
+  margin: 0 0 12px 0;
+  color: #374151;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Public Test Cases Section */
+.public-testcases-section {
+  margin-top: 20px;
+}
+
+.public-testcases-section h4 {
+  margin: 0 0 16px 0;
+  color: #374151;
+  font-weight: 600;
+  font-size: 16px;
+}
+
 /* Right Panel */
 .problem-right-panel {
   background: white;

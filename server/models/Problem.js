@@ -123,6 +123,10 @@ const problemSchema = new mongoose.Schema({
     functionName: {
         type: String,
         default: 'solution'
+    },
+    customTestCaseInputTemplate: {
+        type: String,
+        default: ''
     }
 }, {
     timestamps: true

@@ -29,5 +29,4 @@ router.get('/:id/recent-submissions', getRecentSubmissions);
 router.post('/', authorizeRoles('admin'), createProblem);
 router.patch('/:id', authorizeRoles('admin'), updateProblem);
 router.delete('/:id', authorizeRoles('admin'), deleteProblem);
-
 export default router; 
