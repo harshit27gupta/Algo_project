@@ -57,7 +57,7 @@ const testProblems = [
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <vector>\nusing namespace std;\nvector<int> twoSum(vector<int>& nums, int target) {\n    \n}`,
+            cpp: `#include <vector>\nusing namespace std;\nclass Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        \n    }\n};`,
             java: `public class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        \n    }\n}`,
             c: `#include <stdlib.h>\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    \n    *returnSize = 0;\n    return NULL;\n}`
         },
@@ -125,7 +125,7 @@ const testProblems = [
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <string>\nusing namespace std;\nbool isPalindrome(string s) {\n    \n}`,
+            cpp: `#include <string>\nusing namespace std;\nclass Solution {\npublic:\n    bool isPalindrome(string s) {\n        \n    }\n};`,
             java: `public class Solution {\n    public boolean isPalindrome(String s) {\n        \n    }\n}`,
             c: `#include <stdbool.h>\n#include <string.h>\nbool isPalindrome(char* s) {\n    \n}`
         },
@@ -193,7 +193,7 @@ const testProblems = [
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <string>\nusing namespace std;\nint lengthOfLongestSubstring(string s) {\n    \n}`,
+            cpp: `#include <string>\nusing namespace std;\nclass Solution {\npublic:\n    int lengthOfLongestSubstring(string s) {\n        \n    }\n};`,
             java: `public class Solution {\n    public int lengthOfLongestSubstring(String s) {\n        \n    }\n}`,
             c: `#include <string.h>\nint lengthOfLongestSubstring(char* s) {\n    \n}`
         },
@@ -262,7 +262,7 @@ const testProblems = [
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <vector>\nusing namespace std;\nint maxArea(vector<int>& height) {\n    \n}`,
+            cpp: `#include <vector>\nusing namespace std;\nclass Solution {\npublic:\n    int maxArea(vector<int>& height) {\n        \n    }\n};`,
             java: `public class Solution {\n    public int maxArea(int[] height) {\n        \n    }\n}`,
             c: `int maxArea(int* height, int heightSize) {\n    \n}`
         },
@@ -330,7 +330,7 @@ const testProblems = [
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <vector>\nusing namespace std;\nvector<vector<int>> threeSum(vector<int>& nums) {\n    \n}`,
+            cpp: `#include <vector>\nusing namespace std;\nclass Solution {\npublic:\n    vector<vector<int>> threeSum(vector<int>& nums) {\n        \n    }\n};`,
             java: `import java.util.*;\npublic class Solution {\n    public List<List<Integer>> threeSum(int[] nums) {\n        \n    }\n}`,
             c: `#include <stdlib.h>\nint** threeSum(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {\n    \n}`
         },

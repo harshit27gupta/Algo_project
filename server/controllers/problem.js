@@ -5,7 +5,7 @@ import ErrorResponse from '../utils/errorResponse.js';
 import mongoose from 'mongoose';
 import axios from 'axios';
 import 'dotenv/config';
-
+const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
 export const createProblem = async (req, res) => {
     const { title, description, difficulty, categories, timeLimit, memoryLimit, publicTestCases, hiddenTestCases } = req.body;
 
@@ -455,7 +455,6 @@ export const runCode = async (req, res) => {
     requiredName = problem.functionName || 'solution';
     wrapCodeFn = wrapJavaCode;
       }
-      const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
   const results = [];
   for (let i = 0; i < problem.publicTestCases.length; i++) {
       const testCase = problem.publicTestCases[i];
@@ -567,7 +566,6 @@ export const submitSolution = async (req, res) => {
             wrapCodeFn = wrapJavaCode;
         }
 
-          const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
         const results = [];
         let totalExecutionTime = 0;
         let totalMemoryUsed = 0;
@@ -838,9 +836,9 @@ export const getProblemStats = async (req, res) => {
 };
 
 function wrapJavaCode(userCode, testInput, functionName, functionSignature) {
-  // Extract return type from function signature
-  const returnTypeMatch = functionSignature.match(/^public\s+(\w+(?:<[^>]+>)?)\s+/);
-  const resultType = returnTypeMatch ? returnTypeMatch[1] : 'int';
+  // Extract return type from function signature (handles arrays and generics)
+  const returnTypeMatch = functionSignature.match(/public\s+([^\s]+(\s*<[^>]+>)?(\[\])*)\s+\w+\s*\(/);
+  const resultType = returnTypeMatch ? returnTypeMatch[1].trim() : 'int';
 
   // Parse input parameters
   let inputLines = [];
@@ -1061,7 +1059,7 @@ export const runCustomTestCase = async (req, res) => {
     requiredName = problem.functionName || 'solution';
     wrapCodeFn = wrapJavaCode;
   }
-  const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
+
 
   let userCodeFixed = code;
   if (language === 'cpp') userCodeFixed = enforceCppSignature(code, requiredSignature, requiredName);
