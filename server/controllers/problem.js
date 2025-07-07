@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import ErrorResponse from '../utils/errorResponse.js';
 import mongoose from 'mongoose';
 import axios from 'axios';
+import 'dotenv/config';
 
 export const createProblem = async (req, res) => {
     const { title, description, difficulty, categories, timeLimit, memoryLimit, publicTestCases, hiddenTestCases } = req.body;
