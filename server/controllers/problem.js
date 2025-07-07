@@ -297,27 +297,65 @@ function enforceCSignature(userCode, requiredSignature, requiredName) {
   return userCode;
 }
 
-function wrapCppCode(userCode, testInput, functionName) {
+function wrapCppCode(userCode, testInput, functionName, functionSignature) {
+  // Extract return type from function signature
+  const returnTypeMatch = functionSignature.match(/^\w+(?:<[^>]+>)?\s+/);
+  const resultType = returnTypeMatch ? returnTypeMatch[0].trim() : 'int';
+
+  // Parse input parameters
   let inputLines = [];
-  let matches = [...testInput.matchAll(/(\w+)\s*=\s*(\[[^\]]*\]|\S+)/g)];
+  let params = [];
+  
+  // Handle different input formats
+  const matches = [...testInput.matchAll(/(\w+)\s*=\s*(\[[^\]]*\]|"[^"]*"|\S+)/g)];
+  
   for (const match of matches) {
-    let varName = match[1];
+    const varName = match[1];
     let value = match[2].trim();
+    params.push(varName);
+    
     if (value.startsWith('[')) {
-      const arr = value.replace(/[\[\]\s]/g, '').split(',').filter(Boolean).join(',');
-      inputLines.push(`vector<int> ${varName} = {${arr}};`);
+      // Array input
+      const arr = value.replace(/[\[\]\s]/g, '').split(',').filter(Boolean);
+      if (arr.length > 0 && arr[0].includes('"')) {
+        // String array
+        const stringArr = value.match(/"([^"]*)"/g) || [];
+        inputLines.push(`vector<string> ${varName} = {${stringArr.join(',')}};`);
+      } else {
+        // Integer array
+        inputLines.push(`vector<int> ${varName} = {${arr.join(',')}};`);
+      }
+    } else if (value.startsWith('"')) {
+      // String input
+      inputLines.push(`string ${varName} = ${value};`);
     } else {
-      inputLines.push(`int ${varName} = ${value};`);
+      // Numeric or boolean input
+      if (value === 'true' || value === 'false') {
+        inputLines.push(`bool ${varName} = ${value};`);
+      } else {
+        inputLines.push(`int ${varName} = ${value};`);
+      }
     }
   }
-  let callLine = `auto result = ${functionName}(nums, target);\n`;
-  callLine += 'cout << "[";\n';
-  callLine += 'for (size_t i = 0; i < result.size(); ++i) {\n';
-  callLine += '  cout << result[i];\n';
-  callLine += '  if (i + 1 < result.size()) cout << ",";\n';
-  callLine += '}\n';
-  callLine += 'cout << "]" << endl;';
-  return `#include <iostream>\n#include <vector>\nusing namespace std;\n${userCode}\nint main() {\n${inputLines.join('\n')}\n${callLine}\nreturn 0;\n}`;
+
+  // Generate appropriate print statement based on return type
+  let printResult = '';
+  if (resultType === 'vector<int>') {
+    printResult = `cout << "[";\n    for (size_t i = 0; i < result.size(); ++i) {\n        cout << result[i];\n        if (i + 1 < result.size()) cout << ",";\n    }\n    cout << "]" << endl;`;
+  } else if (resultType === 'vector<vector<int>>') {
+    printResult = `cout << "[";\n    for (size_t i = 0; i < result.size(); ++i) {\n        cout << "[";\n        for (size_t j = 0; j < result[i].size(); ++j) {\n            cout << result[i][j];\n            if (j + 1 < result[i].size()) cout << ",";\n        }\n        cout << "]";\n        if (i + 1 < result.size()) cout << ",";\n    }\n    cout << "]" << endl;`;
+  } else if (resultType === 'string') {
+    printResult = `cout << "\\"" << result << "\\"" << endl;`;
+  } else if (resultType === 'bool') {
+    printResult = `cout << (result ? "true" : "false") << endl;`;
+  } else {
+    printResult = `cout << result << endl;`;
+  }
+
+  // Always instantiate Solution and call as solution.functionName(params)
+  const functionCall = `Solution solution;\nauto result = solution.${functionName}(${params.join(', ')});`;
+  
+  return `#include <iostream>\n#include <vector>\n#include <string>\nusing namespace std;\n\n${userCode}\n\nint main() {\n    ${inputLines.join('\n    ')}\n    ${functionCall}\n    ${printResult}\n    return 0;\n}`;
 }
 
 function cleanCompilerError(stderr, language, originalUserCode = '') {
@@ -381,127 +419,111 @@ function cleanCompilerError(stderr, language, originalUserCode = '') {
 }
 
 export const runCode = async (req, res) => {
-  console.log('LOADED: problem.js');
-  try {
-    const { id } = req.params;
-    const { code, language, customInput } = req.body;
-    console.log('[CustomRun] Received request:', { id, code, language, customInput });
-    if (!req.user) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({
-        success: false,
-        message: 'Please log in to use this feature.'
-      });
-    }
+  const { id } = req.params;
+  const { code, language } = req.body;
 
-    const problem = await Problem.findById(id);
-    if (!problem) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        success: false,
-        message: 'Problem not found'
-      });
-    }
-
-    const requiredSignature = problem.functionSignature[language];
-    const requiredName = problem.functionName;
-
-    let userCodeFixed = code;
-    if (language === 'cpp') userCodeFixed = enforceCppSignature(code, requiredSignature, requiredName);
-    if (language === 'java') {
-      userCodeFixed = enforceJavaSignature(code, requiredSignature, requiredName);
-      userCodeFixed = addJavaImports(userCodeFixed);
-    }
-    if (language === 'c') userCodeFixed = enforceCSignature(code, requiredSignature, requiredName);
-
-    const wrapCodeFn = getWrapCodeFunction(language);
-    const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
-
-    // Handle custom test case ONLY if customInput is present and non-empty
-    if (customInput && customInput.trim()) {
-      const wrappedCode = wrapCodeFn(userCodeFixed, customInput, requiredName);
-      try {
-        const compileRes = await axios.post(COMPILER_URL, {
-          language,
-          code: wrappedCode,
-          input: ''
-        }, { timeout: 10000 });
-        const errorObj = cleanCompilerError(compileRes.data.stderr || '', language, code);
-        let output = (compileRes.data.stdout || '').trim();
-        if (output.endsWith(',')) output = output.slice(0, -1);
-        console.log('[CustomRun] Compiler stdout:', compileRes.data.stdout);
-        console.log('[CustomRun] Compiler stderr:', compileRes.data.stderr);
-        console.log('[CustomRun] Cleaned error:', errorObj.message);
-        console.log('[CustomRun] Final output sent to client:', output);
-        return res.status(StatusCodes.OK).json({
-          success: true,
-          data: {
-            input: customInput,
-            output,
-            stderr: errorObj.message,
-            execTime: compileRes.data.execTime || null
-          }
-        });
-      } catch (err) {
-        console.log('[CustomRun] Compiler error:', err?.response?.data || err.message);
-        return res.status(StatusCodes.OK).json({
-          success: false,
-          data: {
-            input: customInput,
-            output: '',
-            stderr: err?.response?.data || err.message,
-            execTime: null
-          }
-        });
-      }
-    }
-
-    // Otherwise, run all public test cases
-    let results = [];
-    for (let i = 0; i < problem.publicTestCases.length; i++) {
-      const testCase = problem.publicTestCases[i];
-      console.log('[CustomRun] Running public test case:', testCase);
-      const wrappedCode = wrapCodeFn(userCodeFixed, testCase.input, requiredName);
-      try {
-        const compileRes = await axios.post(COMPILER_URL, {
-          language,
-          code: wrappedCode,
-          input: ''
-        }, { timeout: 10000 });
-        const errorObj = cleanCompilerError(compileRes.data.stderr || '', language, code);
-        let output = (compileRes.data.stdout || '').trim();
-        if (output.endsWith(',')) output = output.slice(0, -1);
-        const expected = testCase.output.trim();
-        results.push({
-          id: i,
-          input: testCase.input,
-          expected,
-          output,
-          status: output === expected ? 'passed' : 'failed',
-          stderr: errorObj.message,
-          errorLines: errorObj.lines,
-          execTime: compileRes.data.execTime || null
-        });
-      } catch (err) {
-        results.push({
-          id: i,
-          input: testCase.input,
-          expected: testCase.output.trim(),
-          output: '',
-          status: 'error',
-          stderr: err?.response?.data || err.message,
-          errorLines: [],
-          execTime: null
-        });
-      }
-    }
-    return res.status(StatusCodes.OK).json(results);
-  } catch (error) {
-    console.error('[runCode] Error:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: 'Failed to run code.'
-    });
+  if (!code || !language) {
+      throw new ErrorResponse('Code and language are required', StatusCodes.BAD_REQUEST);
   }
+
+  const problem = await Problem.findById(id);
+
+  if (!problem) {
+      throw new ErrorResponse(`Problem with id ${id} not found`, StatusCodes.NOT_FOUND);
+  }
+
+  const supportedLanguages = ['cpp', 'c', 'java'];
+  if (!supportedLanguages.includes(language)) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message: 'Only C, C++, and Java are supported.'
+      });
+  }
+
+  let requiredSignature, requiredName, wrapCodeFn;
+  if (language === 'cpp') {
+    requiredSignature = problem.functionSignature?.get('cpp') || 'vector<int> solution(vector<int>& nums, int target)';
+    requiredName = problem.functionName || 'solution';
+    wrapCodeFn = wrapCppCode;
+  } else if (language === 'c') {
+    requiredSignature = problem.functionSignature?.get('c') || 'int* solution(int* nums, int numsSize, int target, int* returnSize)';
+    requiredName = problem.functionName || 'solution';
+    wrapCodeFn = wrapCCode;
+  } else if (language === 'java') {
+    requiredSignature = problem.functionSignature?.get('java') || 'public int[] solution(int[] nums, int target)';
+    requiredName = problem.functionName || 'solution';
+    wrapCodeFn = wrapJavaCode;
+      }
+      const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
+  const results = [];
+  for (let i = 0; i < problem.publicTestCases.length; i++) {
+      const testCase = problem.publicTestCases[i];
+      let userCodeFixed = code;
+      if (language === 'cpp') userCodeFixed = enforceCppSignature(code, requiredSignature, requiredName);
+      if (language === 'java') {
+        userCodeFixed = enforceJavaSignature(code, requiredSignature, requiredName);
+        userCodeFixed = addJavaImports(userCodeFixed);
+      }
+      if (language === 'c') userCodeFixed = enforceCSignature(code, requiredSignature, requiredName);
+      const wrappedCode = wrapCodeFn(userCodeFixed, testCase.input, requiredName, requiredSignature);
+      if (language === 'c') {
+        console.log('WRAPPED C CODE:');
+        console.log(wrappedCode);
+      }
+      try {
+          const compileRes = await axios.post(COMPILER_URL, {
+              language,
+              code: wrappedCode,
+              input: ''
+          }, { timeout: 10000 });
+          console.log('RAW COMPILER STDERR:', compileRes.data.stderr);
+          const errorObj = cleanCompilerError(compileRes.data.stderr || '', language, code);
+          let output = (compileRes.data.stdout || '').trim();
+          if (output.endsWith(',')) output = output.slice(0, -1);
+          const expected = testCase.output.trim();
+          results.push({
+              id: i,
+              input: testCase.input,
+              expected,
+              output,
+              status: output === expected ? 'passed' : 'failed',
+              stderr: errorObj.message,
+              errorLines: errorObj.lines,
+              execTime: compileRes.data.execTime || null
+          });
+      } catch (err) {
+          console.log('RAW COMPILER ERROR:', err);
+          console.log('RAW COMPILER ERROR RESPONSE:', err.response?.data);
+          console.log('RAW COMPILER ERROR STDERR:', err.response?.data?.stderr || err.message);
+          let errorMessage = '';
+          if (err.response?.data?.stderr) {
+              errorMessage = typeof err.response.data.stderr === 'string' 
+                  ? err.response.data.stderr 
+                  : JSON.stringify(err.response.data.stderr);
+          } else if (err.message) {
+              errorMessage = err.message;
+          } else {
+              errorMessage = 'Unknown compilation error';
+          }
+          const errorObj = cleanCompilerError(errorMessage, language, code);
+          results.push({
+              id: i,
+              input: testCase.input,
+              expected: testCase.output.trim(),
+              output: '',
+              status: 'error',
+              stderr: errorObj.message,
+              errorLines: errorObj.lines,
+              execTime: null
+          });
+      }
+  }
+  res.status(StatusCodes.OK).json({
+      success: true,
+      data: results
+  });
 };
+
 
 export const submitSolution = async (req, res) => {
     try {
@@ -544,7 +566,7 @@ export const submitSolution = async (req, res) => {
             wrapCodeFn = wrapJavaCode;
         }
 
-        const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
+          const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
         const results = [];
         let totalExecutionTime = 0;
         let totalMemoryUsed = 0;
@@ -563,7 +585,7 @@ export const submitSolution = async (req, res) => {
             compileCheckCode = addJavaImports(compileCheckCode);
         }
         if (language === 'c') compileCheckCode = enforceCSignature(code, requiredSignature, requiredName);
-        const compileCheckWrapped = wrapCodeFn(compileCheckCode, compileCheckInput, requiredName);
+        const compileCheckWrapped = wrapCodeFn(compileCheckCode, compileCheckInput, requiredName, requiredSignature);
         try {
             const compileRes = await axios.post(COMPILER_URL, {
                 language,
@@ -608,7 +630,7 @@ export const submitSolution = async (req, res) => {
             }
             if (language === 'c') userCodeFixed = enforceCSignature(code, requiredSignature, requiredName);
             
-            const wrappedCode = wrapCodeFn(userCodeFixed, testCase.input, requiredName);
+            const wrappedCode = wrapCodeFn(userCodeFixed, testCase.input, requiredName, requiredSignature);
             
             try {
                 const compileRes = await axios.post(COMPILER_URL, {
@@ -814,99 +836,160 @@ export const getProblemStats = async (req, res) => {
     });
 };
 
-function wrapJavaCode(userCode, testInput, functionName) {
-  let numsLine = '';
-  let targetLine = '';
-  const numsMatch = testInput.match(/nums\s*=\s*(\[[^\]]*\])/);
-  const targetMatch = testInput.match(/target\s*=\s*([^\s,]+)/);
-  if (numsMatch) {
-    const arr = numsMatch[1].replace(/[\[\]\s]/g, '').split(',').filter(Boolean).join(',');
-    numsLine = `int[] nums = new int[]{${arr}};`;
-  }
-  if (targetMatch) {
-    targetLine = `int target = ${targetMatch[1]};`;
+function wrapJavaCode(userCode, testInput, functionName, functionSignature) {
+  // Extract return type from function signature
+  const returnTypeMatch = functionSignature.match(/^public\s+(\w+(?:<[^>]+>)?)\s+/);
+  const resultType = returnTypeMatch ? returnTypeMatch[1] : 'int';
+
+  // Parse input parameters
+  let inputLines = [];
+  let params = [];
+  
+  // Handle different input formats
+  const matches = [...testInput.matchAll(/(\w+)\s*=\s*(\[[^\]]*\]|"[^"]*"|\S+)/g)];
+  
+  for (const match of matches) {
+    const varName = match[1];
+    let value = match[2].trim();
+    params.push(varName);
+    
+    if (value.startsWith('[')) {
+      // Array input
+      const arr = value.replace(/[\[\]\s]/g, '').split(',').filter(Boolean);
+      if (arr.length > 0 && arr[0].includes('"')) {
+        // String array
+        const stringArr = value.match(/"([^"]*)"/g) || [];
+        inputLines.push(`String[] ${varName} = {${stringArr.join(',')}};`);
+      } else {
+        // Integer array
+        inputLines.push(`int[] ${varName} = {${arr.join(',')}};`);
+      }
+    } else if (value.startsWith('"')) {
+      // String input
+      inputLines.push(`String ${varName} = ${value};`);
+    } else {
+      // Numeric or boolean input
+      if (value === 'true' || value === 'false') {
+        inputLines.push(`boolean ${varName} = ${value};`);
+      } else {
+        inputLines.push(`int ${varName} = ${value};`);
+      }
+    }
   }
 
+  // Generate appropriate print statement based on return type
+  let printResult = '';
+  if (resultType === 'int[]') {
+    printResult = `System.out.print("[");\n        for (int i = 0; i < result.length; i++) {\n            System.out.print(result[i]);\n            if (i + 1 < result.length) System.out.print(",");\n        }\n        System.out.println("]");`;
+  } else if (resultType === 'List<List<Integer>>') {
+    printResult = `System.out.println(result);`;
+  } else if (resultType === 'String') {
+    printResult = `System.out.println(result);`;
+  } else if (resultType === 'boolean') {
+    printResult = `System.out.println(result);`;
+  } else if (resultType === 'int') {
+    printResult = `System.out.println(result);`;
+  } else {
+    printResult = `System.out.println(result);`;
+  }
+
+  const mainMethod = `\n    public static void main(String[] args) {\n        ${inputLines.join('\n        ')}\n        Solution solution = new Solution();\n        ${resultType} result = solution.${functionName}(${params.join(', ')});\n        ${printResult}\n    }`;
+
+  // Insert main and helpers into user code
   const hasClass = userCode.includes('public class ') || userCode.includes('class ');
-  
   if (hasClass) {
     let modifiedCode = userCode.replace(/public\s+class\s+[A-Za-z0-9_]+/, 'public class Solution');
     modifiedCode = modifiedCode.replace(/class\s+[A-Za-z0-9_]+/, 'class Solution');
-    
     const lastBraceIndex = modifiedCode.lastIndexOf('}');
     if (lastBraceIndex !== -1) {
-      const mainMethod = `
-    public static void main(String[] args) {
-        ${numsLine}
-        ${targetLine}
-        Solution solution = new Solution();
-        int[] result = solution.${functionName}(nums, target);
-        System.out.print("[");
-        for (int i = 0; i < result.length; i++) {
-            System.out.print(result[i]);
-            if (i + 1 < result.length) System.out.print(",");
-        }
-        System.out.println("]");
-    }`;
       return modifiedCode.slice(0, lastBraceIndex) + mainMethod + '\n' + modifiedCode.slice(lastBraceIndex);
     }
     return modifiedCode;
   } else {
-    const mainMethod = `
-    public static void main(String[] args) {
-        ${numsLine}
-        ${targetLine}
-        Solution solution = new Solution();
-        int[] result = solution.${functionName}(nums, target);
-        System.out.print("[");
-        for (int i = 0; i < result.length; i++) {
-            System.out.print(result[i]);
-            if (i + 1 < result.length) System.out.print(",");
-        }
-        System.out.println("]");
-    }`;
-    
-    return `public class Solution {
-    ${userCode}
-    ${mainMethod}
-}`;
+    return `public class Solution {\n    ${userCode}\n    ${mainMethod}\n}`;
   }
 }
 
-function wrapCCode(userCode, testInput, functionName) { 
-  let numsLine = '';
-  let targetLine = '';
-  let returnSizeLine = '';
-  let numsSize = 0;
-  const numsMatch = testInput.match(/nums\s*=\s*(\[[^\]]*\])/);
-  const targetMatch = testInput.match(/target\s*=\s*([^\s,]+)/);
-  
-  if (numsMatch) {
-    const arr = numsMatch[1].replace(/[\[\]\s]/g, '').split(',').filter(Boolean);
-    numsSize = arr.length;
-    numsLine = `int nums[] = {${arr.join(',')}};`;
-  }
-  if (targetMatch) {
-    targetLine = `int target = ${targetMatch[1]};`;
-  }
-  returnSizeLine = `int returnSize;`;
+function wrapCCode(userCode, testInput, functionName, functionSignature) {
+  // Extract return type from function signature
+  const returnTypeMatch = functionSignature.match(/^(\w+(?:\*)?)\s+/);
+  const resultType = returnTypeMatch ? returnTypeMatch[1] : 'int';
 
+  // Parse input parameters
+  let inputLines = [];
+  let params = [];
+  let returnSizeLine = '';
+  let returnSizeParam = '';
+  
+  // Handle different input formats
+  const matches = [...testInput.matchAll(/(\w+)\s*=\s*(\[[^\]]*\]|"[^"]*"|\S+)/g)];
+  
+  for (const match of matches) {
+    const varName = match[1];
+    let value = match[2].trim();
+    
+    if (value.startsWith('[')) {
+      // Array input
+      const arr = value.replace(/[\[\]\s]/g, '').split(',').filter(Boolean);
+      if (arr.length > 0 && arr[0].includes('"')) {
+        // String array - C doesn't handle this well, but we'll try
+        const stringArr = value.match(/"([^"]*)"/g) || [];
+        inputLines.push(`char* ${varName}[] = {${stringArr.join(',')}};`);
+        inputLines.push(`int ${varName}Size = ${stringArr.length};`);
+        params.push(varName, `${varName}Size`);
+      } else {
+        // Integer array
+        inputLines.push(`int ${varName}[] = {${arr.join(',')}};`);
+        inputLines.push(`int ${varName}Size = ${arr.length};`);
+        params.push(varName, `${varName}Size`);
+      }
+    } else if (value.startsWith('"')) {
+      // String input
+      inputLines.push(`char* ${varName} = ${value};`);
+      params.push(varName);
+    } else {
+      // Numeric input
+      if (value === 'true' || value === 'false') {
+        inputLines.push(`bool ${varName} = ${value};`);
+      } else {
+        inputLines.push(`int ${varName} = ${value};`);
+      }
+      params.push(varName);
+    }
+  }
+
+  // Add returnSize parameter for array return types
+  if (resultType === 'int*' || resultType === 'char*') {
+    returnSizeLine = 'int returnSize;';
+    returnSizeParam = ', &returnSize';
+  }
+
+  // Generate appropriate print statement based on return type
+  let printResult = '';
+  if (resultType === 'int*') {
+    printResult = `printf("[");\n    for (int i = 0; i < returnSize; i++) {\n        printf("%d", result[i]);\n        if (i + 1 < returnSize) printf(",");\n    }\n    printf("]\\n");\n    free(result);`;
+  } else if (resultType === 'char*') {
+    printResult = `printf("\\"%s\\"\\n", result);\n    free(result);`;
+  } else if (resultType === 'bool') {
+    printResult = `printf("%s\\n", result ? "true" : "false");`;
+  } else {
+    printResult = `printf("%d\\n", result);`;
+  }
+
+  const functionCall = `${resultType} result = ${functionName}(${params.join(', ')}${returnSizeParam});`;
+  
   return `#include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
 ${userCode}
 
 int main() {
-    ${numsLine}
-    ${targetLine}
+    ${inputLines.join('\n    ')}
     ${returnSizeLine}
-    int* result = ${functionName}(nums, ${numsSize}, target, &returnSize);
-    printf("[");
-    for (int i = 0; i < returnSize; i++) {
-        printf("%d", result[i]);
-        if (i + 1 < returnSize) printf(",");
-    }
-    printf("]\\n");
-    free(result);
+    ${functionCall}
+    ${printResult}
     return 0;
 }`;
 }
@@ -935,15 +1018,93 @@ function addJavaImports(userCode) {
   return userCode;
 }
 
-function getWrapCodeFunction(language) {
-  switch (language) {
-    case 'cpp':
-      return wrapCppCode;
-    case 'java':
-      return wrapJavaCode;
-    case 'c':
-      return wrapCCode;
-    default:
-      throw new Error(`Unsupported language: ${language}`);
+
+export const runCustomTestCase = async (req, res) => {
+  const { id } = req.params;
+  const { code, language, customInput } = req.body;
+
+  if (!code || !language || !customInput || !customInput.trim()) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: 'Code, language, and custom input are required.'
+    });
   }
-} 
+
+  const problem = await Problem.findById(id);
+  if (!problem) {
+    return res.status(StatusCodes.NOT_FOUND).json({
+      success: false,
+      message: `Problem with id ${id} not found`
+    });
+  }
+
+  const supportedLanguages = ['cpp', 'c', 'java'];
+  if (!supportedLanguages.includes(language)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: 'Only C, C++, and Java are supported.'
+    });
+  }
+
+  let requiredSignature, requiredName, wrapCodeFn;
+  if (language === 'cpp') {
+    requiredSignature = problem.functionSignature?.get('cpp') || 'vector<int> solution(vector<int>& nums, int target)';
+    requiredName = problem.functionName || 'solution';
+    wrapCodeFn = wrapCppCode;
+  } else if (language === 'c') {
+    requiredSignature = problem.functionSignature?.get('c') || 'int* solution(int* nums, int numsSize, int target, int* returnSize)';
+    requiredName = problem.functionName || 'solution';
+    wrapCodeFn = wrapCCode;
+  } else if (language === 'java') {
+    requiredSignature = problem.functionSignature?.get('java') || 'public int[] solution(int[] nums, int target)';
+    requiredName = problem.functionName || 'solution';
+    wrapCodeFn = wrapJavaCode;
+  }
+  const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
+
+  let userCodeFixed = code;
+  if (language === 'cpp') userCodeFixed = enforceCppSignature(code, requiredSignature, requiredName);
+  if (language === 'java') {
+    userCodeFixed = enforceJavaSignature(code, requiredSignature, requiredName);
+    userCodeFixed = addJavaImports(userCodeFixed);
+  }
+  if (language === 'c') userCodeFixed = enforceCSignature(code, requiredSignature, requiredName);
+  const wrappedCode = wrapCodeFn(userCodeFixed, customInput, requiredName, requiredSignature);
+
+  try {
+    const compileRes = await axios.post(COMPILER_URL, {
+      language,
+      code: wrappedCode,
+      input: ''
+    }, { timeout: 10000 });
+    const errorObj = cleanCompilerError(compileRes.data.stderr || '', language, code);
+    let output = (compileRes.data.stdout || '').trim();
+    if (output.endsWith(',')) output = output.slice(0, -1);
+    const resultObj = {
+      input: customInput,
+      output,
+      stderr: errorObj.message,
+      execTime: compileRes.data.execTime || null
+    };
+    return res.status(StatusCodes.OK).json({ success: true, data: resultObj });
+  } catch (err) {
+    let errorMessage = '';
+    if (err.response?.data?.stderr) {
+      errorMessage = typeof err.response.data.stderr === 'string' 
+        ? err.response.data.stderr 
+        : JSON.stringify(err.response.data.stderr);
+    } else if (err.message) {
+      errorMessage = err.message;
+    } else {
+      errorMessage = 'Unknown compilation error';
+    }
+    const errorObj = cleanCompilerError(errorMessage, language, code);
+    const resultObj = {
+      input: customInput,
+      output: '',
+      stderr: errorObj.message,
+      execTime: null
+    };
+    return res.status(StatusCodes.OK).json({ success: false, data: resultObj });
+  }
+}; 

@@ -58,83 +58,84 @@ const testProblems = [
         isPublished: true,
         starterCode: {
             cpp: `#include <vector>\nusing namespace std;\nvector<int> twoSum(vector<int>& nums, int target) {\n    \n}`,
-            javascript: `function twoSum(nums, target) {\n  \n}`,
             java: `public class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        \n    }\n}`,
             c: `#include <stdlib.h>\nint* twoSum(int* nums, int numsSize, int target, int* returnSize) {\n    \n    *returnSize = 0;\n    return NULL;\n}`
         },
         functionSignature: {
             cpp: "vector<int> twoSum(vector<int>& nums, int target)",
-            javascript: "function twoSum(nums, target) {",
             java: "public int[] twoSum(int[] nums, int target)",
             c: "int* twoSum(int* nums, int numsSize, int target, int* returnSize)"
         },
         functionName: "twoSum",
-        customTestCaseInputTemplate: "nums=[], target="
+        customTestCaseInputTemplate: "nums=[2,7,11,15], target=9"
     },
     {
-        title: "Add Two Numbers",
-        description: "You are given two non-empty linked lists representing two non-negative integers. The digits are stored in reverse order, and each of their nodes contains a single digit. Add the two numbers and return the sum as a linked list.",
-        difficulty: "Medium",
-        rating: 1600,
-        categories: ["Linked List", "Math"],
+        title: "Valid Palindrome",
+        description: "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward. Alphanumeric characters include letters and numbers. Given a string s, return true if it is a palindrome, or false otherwise.",
+        difficulty: "Easy",
+        rating: 1300,
+        categories: ["String", "Two Pointers"],
         timeLimit: 2000,
         memoryLimit: 512,
         constraints: [
-            "1 ≤ length of l1, l2 ≤ 100",
-            "0 ≤ l1[i], l2[i] ≤ 9"
+            "1 ≤ s.length ≤ 2 * 10^5",
+            "s consists only of printable ASCII characters"
         ],
         publicTestCases: [
             {
-                input: "l1 = [2,4,3], l2 = [5,6,4]",
-                output: "[7,0,8]",
-                explanation: "342 + 465 = 807"
+                input: 's = "A man a plan a canal Panama"',
+                output: "true",
+                explanation: "After removing non-alphanumeric characters: 'amanaplanacanalpanama' which reads the same forward and backward."
+            },
+            {
+                input: 's = "race a car"',
+                output: "false",
+                explanation: "After removing non-alphanumeric characters: 'raceacar' which does not read the same forward and backward."
             }
         ],
         hiddenTestCases: [
             {
-                input: "l1 = [9,9,9,9,9,9,9], l2 = [9,9,9,9]",
-                output: "[8,9,9,9,0,0,0,1]"
+                input: 's = " "',
+                output: "true"
             },
             {
-                input: "l1 = [0], l2 = [0]",
-                output: "[0]"
+                input: 's = "racecar"',
+                output: "true"
             },
             {
-                input: "l1 = [2,4,9], l2 = [5,6,4,9]",
-                output: "[7,0,4,0,1]"
+                input: 's = "Was it a car or a cat I saw"',
+                output: "true"
             },
             {
-                input: "l1 = [1,8], l2 = [0]",
-                output: "[1,8]"
+                input: 's = "hello"',
+                output: "false"
             },
             {
-                input: "l1 = [9], l2 = [1,9,9,9,9,9,9,9,9,9]",
-                output: "[0,0,0,0,0,0,0,0,0,0,0,1]"
+                input: 's = "12321"',
+                output: "true"
             },
             {
-                input: "l1 = [5], l2 = [5]",
-                output: "[0,1]"
+                input: 's = "0P"',
+                output: "false"
             },
             {
-                input: "l1 = [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1], l2 = [5,6,4]",
-                output: "[6,6,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]"
+                input: 's = "A1b2C3c2b1a"',
+                output: "true"
             }
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <vector>\nusing namespace std;\nvector<int> addTwoNumbers(vector<int>& l1, vector<int>& l2) {\n    \n}`,
-            javascript: `function addTwoNumbers(l1, l2) {\n  \n}`,
-            java: `public class Solution {\n    public int[] addTwoNumbers(int[] l1, int[] l2) {\n        \n    }\n}`,
-            c: `#include <stdlib.h>\nint* addTwoNumbers(int* l1, int l1Size, int* l2, int l2Size, int* returnSize) {\n    \n    *returnSize = 0;\n    return NULL;\n}`
+            cpp: `#include <string>\nusing namespace std;\nbool isPalindrome(string s) {\n    \n}`,
+            java: `public class Solution {\n    public boolean isPalindrome(String s) {\n        \n    }\n}`,
+            c: `#include <stdbool.h>\n#include <string.h>\nbool isPalindrome(char* s) {\n    \n}`
         },
         functionSignature: {
-            cpp: "vector<int> addTwoNumbers(vector<int>& l1, vector<int>& l2)",
-            javascript: "function addTwoNumbers(l1, l2) {",
-            java: "public int[] addTwoNumbers(int[] l1, int[] l2)",
-            c: "int* addTwoNumbers(int* l1, int l1Size, int* l2, int l2Size, int* returnSize)"
+            cpp: "bool isPalindrome(string s)",
+            java: "public boolean isPalindrome(String s)",
+            c: "bool isPalindrome(char* s)"
         },
-        functionName: "addTwoNumbers",
-        customTestCaseInputTemplate: "l1=[], l2=[]"
+        functionName: "isPalindrome",
+        customTestCaseInputTemplate: 's="A man a plan a canal Panama"'
     },
     {
         title: "Longest Substring Without Repeating Characters",
@@ -150,192 +151,537 @@ const testProblems = [
         ],
         publicTestCases: [
             {
-                input: "s = 'abcabcbb'",
+                input: 's = "abcabcbb"',
                 output: "3",
                 explanation: "The answer is 'abc', with the length of 3."
             },
             {
-                input: "s = 'bbbbb'",
+                input: 's = "bbbbb"',
                 output: "1",
                 explanation: "The answer is 'b', with the length of 1."
             }
         ],
         hiddenTestCases: [
             {
-                input: "s = 'pwwkew'",
+                input: 's = "pwwkew"',
                 output: "3"
             },
             {
-                input: "s = 'dvdf'",
+                input: 's = "dvdf"',
                 output: "3"
             },
             {
-                input: "s = 'abba'",
+                input: 's = "abba"',
                 output: "2"
             },
             {
-                input: "s = 'a'",
+                input: 's = "a"',
                 output: "1"
             },
             {
-                input: "s = 'abcabcbb'",
+                input: 's = "abcabcbb"',
                 output: "3"
             },
             {
-                input: "s = 'bbtablud'",
+                input: 's = "bbtablud"',
                 output: "6"
             },
             {
-                input: "s = 'tmmzuxt'",
+                input: 's = "tmmzuxt"',
                 output: "5"
             }
         ],
         isPublished: true,
         starterCode: {
             cpp: `#include <string>\nusing namespace std;\nint lengthOfLongestSubstring(string s) {\n    \n}`,
-            javascript: `function lengthOfLongestSubstring(s) {\n  \n}`,
             java: `public class Solution {\n    public int lengthOfLongestSubstring(String s) {\n        \n    }\n}`,
             c: `#include <string.h>\nint lengthOfLongestSubstring(char* s) {\n    \n}`
         },
         functionSignature: {
             cpp: "int lengthOfLongestSubstring(string s)",
-            javascript: "function lengthOfLongestSubstring(s) {",
             java: "public int lengthOfLongestSubstring(String s)",
             c: "int lengthOfLongestSubstring(char* s)"
         },
         functionName: "lengthOfLongestSubstring",
-        customTestCaseInputTemplate: "s="
+        customTestCaseInputTemplate: 's="abcabcbb"'
     },
     {
-        title: "Binary Tree Level Order Traversal",
-        description: "Given the root of a binary tree, return the level order traversal of its nodes' values. (i.e., from left to right, level by level).",
+        title: "Container With Most Water",
+        description: "You are given an integer array height of length n. There are n vertical lines drawn such that the two endpoints of the ith line are (i, 0) and (i, height[i]). Find two lines, which, together with the x-axis forms a container, such that the container contains the most water. Return the maximum amount of water a container can store.",
         difficulty: "Medium",
-        rating: 1500,
-        categories: ["Tree", "Breadth-First Search"],
+        rating: 1700,
+        categories: ["Array", "Two Pointers", "Greedy"],
         timeLimit: 2000,
         memoryLimit: 512,
         constraints: [
-            "0 ≤ number of nodes ≤ 2000",
-            "-1000 ≤ Node.val ≤ 1000"
+            "n == height.length",
+            "2 ≤ n ≤ 10^5",
+            "0 ≤ height[i] ≤ 10^4"
         ],
         publicTestCases: [
             {
-                input: "root = [3,9,20,null,null,15,7]",
-                output: "[[3],[9,20],[15,7]]",
-                explanation: "Level 1: [3], Level 2: [9,20], Level 3: [15,7]"
+                input: "height = [1,8,6,2,5,4,8,3,7]",
+                output: "49",
+                explanation: "The maximum area is obtained by choosing height[1] = 8 and height[8] = 7, giving us 8 * (8-1) = 49."
+            },
+            {
+                input: "height = [1,1]",
+                output: "1",
+                explanation: "The maximum area is 1 * 1 = 1."
             }
         ],
         hiddenTestCases: [
             {
-                input: "root = [1]",
-                output: "[[1]]"
+                input: "height = [4,3,2,1,4]",
+                output: "16"
             },
             {
-                input: "root = []",
-                output: "[]"
+                input: "height = [1,2,1]",
+                output: "2"
             },
             {
-                input: "root = [1,2,3,4,5,null,7]",
-                output: "[[1],[2,3],[4,5,7]]"
+                input: "height = [2,3,4,5,18,17,6]",
+                output: "17"
             },
             {
-                input: "root = [3,9,20,null,null,15,7]",
-                output: "[[3],[9,20],[15,7]]"
+                input: "height = [1,8,6,2,5,4,8,3,7]",
+                output: "49"
             },
             {
-                input: "root = [1,2,2,3,4,4,3]",
-                output: "[[1],[2,2],[3,4,4,3]]"
+                input: "height = [10,9,8,7,6,5,4,3,2,1]",
+                output: "25"
             },
             {
-                input: "root = [1,null,2,3]",
-                output: "[[1],[2],[3]]"
+                input: "height = [1,2,3,4,5,6,7,8,9,10]",
+                output: "25"
             },
             {
-                input: "root = [1,2,3,4,null,null,5]",
-                output: "[[1],[2,3],[4,5]]"
+                input: "height = [5,5,5,5,5]",
+                output: "20"
             }
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <vector>\nusing namespace std;\nvector<vector<int>> levelOrder(TreeNode* root) {\n    \n}`,
-            javascript: `function levelOrder(root) {\n  \n}`,
-            java: `public class Solution {\n    public List<List<Integer>> levelOrder(TreeNode root) {\n        \n         }\n}`,
-            c: `#include <stdlib.h>\nstruct TreeNode { int val; struct TreeNode *left; struct TreeNode *right; };\nint** levelOrder(struct TreeNode* root, int* returnSize, int** returnColumnSizes) {\n    \n}`
+            cpp: `#include <vector>\nusing namespace std;\nint maxArea(vector<int>& height) {\n    \n}`,
+            java: `public class Solution {\n    public int maxArea(int[] height) {\n        \n    }\n}`,
+            c: `int maxArea(int* height, int heightSize) {\n    \n}`
         },
         functionSignature: {
-            cpp: "vector<vector<int>> levelOrder(TreeNode* root)",
-            javascript: "function levelOrder(root) {",
-            java: "public List<List<Integer>> levelOrder(TreeNode root)",
-            c: "int** levelOrder(struct TreeNode* root, int* returnSize, int** returnColumnSizes)"
+            cpp: "int maxArea(vector<int>& height)",
+            java: "public int maxArea(int[] height)",
+            c: "int maxArea(int* height, int heightSize)"
         },
-        functionName: "levelOrder",
-        customTestCaseInputTemplate: "root=[]"
+        functionName: "maxArea",
+        customTestCaseInputTemplate: "height=[1,8,6,2,5,4,8,3,7]"
     },
     {
-        title: "Merge K Sorted Lists",
-        description: "You are given an array of k linked-lists lists, each linked-list is sorted in ascending order. Merge all the linked-lists into one sorted linked-list and return it.",
-        difficulty: "Hard",
-        rating: 2000,
-        categories: ["Linked List", "Divide and Conquer", "Heap"],
+        title: "3Sum",
+        description: "Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i != j, i != k, and j != k, and nums[i] + nums[j] + nums[k] == 0. Notice that the solution set must not contain duplicate triplets.",
+        difficulty: "Medium",
+        rating: 1800,
+        categories: ["Array", "Two Pointers", "Sorting"],
         timeLimit: 3000,
         memoryLimit: 1024,
         constraints: [
-            "0 ≤ k ≤ 10^4",
-            "0 ≤ lists[i].length ≤ 500",
-            "-10^4 ≤ lists[i][j] ≤ 10^4"
+            "3 ≤ nums.length ≤ 3000",
+            "-10^5 ≤ nums[i] ≤ 10^5"
         ],
         publicTestCases: [
             {
-                input: "lists = [[1,4,5],[1,3,4],[2,6]]",
-                output: "[1,1,2,3,4,4,5,6]",
-                explanation: "The linked-lists are: [1->4->5, 1->3->4, 2->6]"
+                input: "nums = [-1,0,1,2,-1,-4]",
+                output: "[[-1,-1,2],[-1,0,1]]",
+                explanation: "The triplets that sum to zero are [-1,-1,2] and [-1,0,1]."
+            },
+            {
+                input: "nums = [0,1,1]",
+                output: "[]",
+                explanation: "The only possible triplet does not sum up to 0."
             }
         ],
         hiddenTestCases: [
             {
-                input: "lists = []",
+                input: "nums = [0,0,0]",
+                output: "[[0,0,0]]"
+            },
+            {
+                input: "nums = [-2,0,1,1,2]",
+                output: "[[-2,0,2],[-2,1,1]]"
+            },
+            {
+                input: "nums = [-1,0,1,2,-1,-4]",
+                output: "[[-1,-1,2],[-1,0,1]]"
+            },
+            {
+                input: "nums = [1,2,-2,-1]",
                 output: "[]"
             },
             {
-                input: "lists = [[1],[0]]",
-                output: "[0,1]"
+                input: "nums = [3,0,-2,-1,1,2]",
+                output: "[[-2,-1,3],[-2,0,2],[-1,0,1]]"
             },
             {
-                input: "lists = [[2,6,8],[3,6,7],[1,3,4]]",
-                output: "[1,2,3,3,4,6,6,7,8]"
+                input: "nums = [-4,-2,-2,-2,0,1,2,2,2,3,3,4,4,6,6]",
+                output: "[[-4,-2,6],[-4,0,4],[-4,1,3],[-4,2,2],[-2,-2,4],[-2,0,2]]"
             },
             {
-                input: "lists = [[-2,-1,-1,-1],[0,1,2],[3,4,5]]",
-                output: "[-2,-1,-1,-1,0,1,2,3,4,5]"
-            },
-            {
-                input: "lists = [[1,4,5],[1,3,4],[2,6]]",
-                output: "[1,1,2,3,4,4,5,6]"
-            },
-            {
-                input: "lists = [[1,2,3],[4,5,6],[7,8,9]]",
-                output: "[1,2,3,4,5,6,7,8,9]"
-            },
-            {
-                input: "lists = [[10,20,30],[5,15,25],[1,2,3]]",
-                output: "[1,2,3,5,10,15,20,25,30]"
+                input: "nums = [0,0,0,0]",
+                output: "[[0,0,0]]"
             }
         ],
         isPublished: true,
         starterCode: {
-            cpp: `#include <vector>\nusing namespace std;\nListNode* mergeKLists(vector<ListNode*>& lists) {\n    \n}`,
-            javascript: `function mergeKLists(lists) {\n  \n}`,
-            java: `public class Solution {\n    public ListNode mergeKLists(ListNode[] lists) {\n        \n    }\n}`,
-            c: `struct ListNode { int val; struct ListNode *next; };\nstruct ListNode* mergeKLists(struct ListNode** lists, int listsSize) {\n    \n}`
+            cpp: `#include <vector>\nusing namespace std;\nvector<vector<int>> threeSum(vector<int>& nums) {\n    \n}`,
+            java: `import java.util.*;\npublic class Solution {\n    public List<List<Integer>> threeSum(int[] nums) {\n        \n    }\n}`,
+            c: `#include <stdlib.h>\nint** threeSum(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {\n    \n}`
         },
         functionSignature: {
-            cpp: "ListNode* mergeKLists(vector<ListNode*>& lists)",
-            javascript: "function mergeKLists(lists) {",
-            java: "public ListNode mergeKLists(ListNode[] lists)",
-            c: "struct ListNode* mergeKLists(struct ListNode** lists, int listsSize)"
+            cpp: "vector<vector<int>> threeSum(vector<int>& nums)",
+            java: "public List<List<Integer>> threeSum(int[] nums)",
+            c: "int** threeSum(int* nums, int numsSize, int* returnSize, int** returnColumnSizes)"
         },
-            functionName: "mergeKLists",
-        customTestCaseInputTemplate: "lists=[]"
+        functionName: "threeSum",
+        customTestCaseInputTemplate: "nums=[-1,0,1,2,-1,-4]"
+    },
+    {
+        title: "Reverse Integer",
+        description: "Given a signed 32-bit integer x, return x with its digits reversed. If reversing x causes the value to go outside the signed 32-bit integer range [-2^31, 2^31 - 1], then return 0.",
+        difficulty: "Medium",
+        rating: 1400,
+        categories: ["Math"],
+        timeLimit: 2000,
+        memoryLimit: 512,
+        constraints: [
+            "-2^31 ≤ x ≤ 2^31 - 1"
+        ],
+        publicTestCases: [
+            {
+                input: "x = 123",
+                output: "321",
+                explanation: "123 reversed is 321."
+            },
+            {
+                input: "x = -123",
+                output: "-321",
+                explanation: "-123 reversed is -321."
+            }
+        ],
+        hiddenTestCases: [
+            {
+                input: "x = 120",
+                output: "21"
+            },
+            {
+                input: "x = 0",
+                output: "0"
+            },
+            {
+                input: "x = 1534236469",
+                output: "0"
+            },
+            {
+                input: "x = -2147483648",
+                output: "0"
+            },
+            {
+                input: "x = 1000",
+                output: "1"
+            },
+            {
+                input: "x = 1000000003",
+                output: "0"
+            },
+            {
+                input: "x = 1463847412",
+                output: "2147483641"
+            }
+        ],
+        isPublished: true,
+        starterCode: {
+            cpp: `class Solution {\npublic:\n    int reverse(int x) {\n        \n    }\n};`,
+            java: `public class Solution {\n    public int reverse(int x) {\n        \n    }\n}`,
+            c: `int reverse(int x) {\n    \n}`
+        },
+        functionSignature: {
+            cpp: "int reverse(int x)",
+            java: "public int reverse(int x)",
+            c: "int reverse(int x)"
+        },
+        functionName: "reverse",
+        customTestCaseInputTemplate: "x=123"
+    },
+    {
+        title: "String to Integer (atoi)",
+        description: "Implement the myAtoi(string s) function, which converts a string to a 32-bit signed integer (similar to C/C++'s atoi function). The algorithm for myAtoi(string s) is as follows: 1. Read in and ignore any leading whitespace. 2. Check if the next character (if not already at the end of the string) is '-' or '+'. Read this character in if it is either. This determines if the final result is negative or positive respectively. 3. Read in next the characters until the next non-digit character or the end of the input is reached. The rest of the string is ignored. 4. Convert these digits into an integer (i.e. '123' -> 123, '0032' -> 32). If no digits were read, then the integer is 0. Change the sign as necessary (from step 2). 5. If the integer is out of the 32-bit signed integer range [-2^31, 2^31 - 1], then clamp the integer so that it remains in the range. Specifically, integers less than -2^31 should be clamped to -2^31, and integers greater than 2^31 - 1 should be clamped to 2^31 - 1. 6. Return the integer as the final result.",
+        difficulty: "Medium",
+        rating: 1600,
+        categories: ["String", "Math"],
+        timeLimit: 2000,
+        memoryLimit: 512,
+        constraints: [
+            "0 ≤ s.length ≤ 200",
+            "s consists of English letters (lower-case and upper-case), digits (0-9), ' ', '+', '-', and '.'."
+        ],
+        publicTestCases: [
+            {
+                input: 's = "42"',
+                output: "42",
+                explanation: "The underlined characters are what is read in, the caret is the current reader position."
+            },
+            {
+                input: 's = "   -42"',
+                output: "-42",
+                explanation: "Leading whitespace is ignored and '-' is read, so the result is negative."
+            }
+        ],
+        hiddenTestCases: [
+            {
+                input: 's = "4193 with words"',
+                output: "4193"
+            },
+            {
+                input: 's = "words and 987"',
+                output: "0"
+            },
+            {
+                input: 's = "-91283472332"',
+                output: "-2147483648"
+            },
+            {
+                input: 's = "3.14159"',
+                output: "3"
+            },
+            {
+                input: 's = "+1"',
+                output: "1"
+            },
+            {
+                input: 's = "   +0 123"',
+                output: "0"
+            },
+            {
+                input: 's = "21474836460"',
+                output: "2147483647"
+            }
+        ],
+        isPublished: true,
+        starterCode: {
+            cpp: `#include <string>\nusing namespace std;\nclass Solution {\npublic:\n    int myAtoi(string s) {\n        \n    }\n};`,
+            java: `public class Solution {\n    public int myAtoi(String s) {\n        \n    }\n}`,
+            c: `#include <string.h>\nint myAtoi(char* s) {\n    \n}`
+        },
+        functionSignature: {
+            cpp: "int myAtoi(string s)",
+            java: "public int myAtoi(String s)",
+            c: "int myAtoi(char* s)"
+        },
+        functionName: "myAtoi",
+        customTestCaseInputTemplate: 's="42"'
+    },
+    {
+        title: "Roman to Integer",
+        description: "Roman numerals are represented by seven different symbols: I, V, X, L, C, D and M. Symbol Value I 1 V 5 X 10 L 50 C 100 D 500 M 1000 For example, 2 is written as II in Roman numeral, just two one's added together. 12 is written as XII, which is simply X + II. The number 27 is written as XXVII, which is XX + V + II. Roman numerals are usually written largest to smallest from left to right. However, the numeral for four is not IIII. Instead, the number four is written as IV. Because the one is before the five we subtract it making four. The same principle applies to the number nine, which is written as IX. There are six instances where subtraction is used: I can be placed before V (5) and X (10) to make 4 and 9. X can be placed before L (50) and C (100) to make 40 and 90. C can be placed before D (500) and M (1000) to make 400 and 900. Given a roman numeral, convert it to an integer.",
+        difficulty: "Easy",
+        rating: 1100,
+        categories: ["String", "Math", "Hash Table"],
+        timeLimit: 2000,
+        memoryLimit: 512,
+        constraints: [
+            "1 ≤ s.length ≤ 15",
+            "s contains only the characters ('I', 'V', 'X', 'L', 'C', 'D', 'M')",
+            "It is guaranteed that s is a valid roman numeral in the range [1, 3999]"
+        ],
+        publicTestCases: [
+            {
+                input: 's = "III"',
+                output: "3",
+                explanation: "III = 3."
+            },
+            {
+                input: 's = "LVIII"',
+                output: "58",
+                explanation: "L = 50, V = 5, III = 3."
+            }
+        ],
+        hiddenTestCases: [
+            {
+                input: 's = "MCMXCIV"',
+                output: "1994"
+            },
+            {
+                input: 's = "IV"',
+                output: "4"
+            },
+            {
+                input: 's = "IX"',
+                output: "9"
+            },
+            {
+                input: 's = "XL"',
+                output: "40"
+            },
+            {
+                input: 's = "XC"',
+                output: "90"
+            },
+            {
+                input: 's = "CD"',
+                output: "400"
+            },
+            {
+                input: 's = "CM"',
+                output: "900"
+            }
+        ],
+        isPublished: true,
+        starterCode: {
+            cpp: `#include <string>\nusing namespace std;\nclass Solution {\npublic:\n    int romanToInt(string s) {\n        \n    }\n};`,
+            java: `public class Solution {\n    public int romanToInt(String s) {\n        \n    }\n}`,
+            c: `#include <string.h>\nint romanToInt(char* s) {\n    \n}`
+        },
+        functionSignature: {
+            cpp: "int romanToInt(string s)",
+            java: "public int romanToInt(String s)",
+            c: "int romanToInt(char* s)"
+        },
+        functionName: "romanToInt",
+        customTestCaseInputTemplate: 's="III"'
+    },
+    {
+        title: "Longest Common Prefix",
+        description: "Write a function to find the longest common prefix string amongst an array of strings. If there is no common prefix, return an empty string ''.",
+        difficulty: "Easy",
+        rating: 1200,
+        categories: ["String"],
+        timeLimit: 2000,
+        memoryLimit: 512,
+        constraints: [
+            "1 ≤ strs.length ≤ 200",
+            "0 ≤ strs[i].length ≤ 200",
+            "strs[i] consists of only lowercase English letters"
+        ],
+        publicTestCases: [
+            {
+                input: 'strs = ["flower","flow","flight"]',
+                output: "'fl'",
+                explanation: "The longest common prefix is 'fl'."
+            },
+            {
+                input: 'strs = ["dog","racecar","car"]',
+                output: "''",
+                explanation: "There is no common prefix among the input strings."
+            }
+        ],
+        hiddenTestCases: [
+            {
+                input: 'strs = ["interspecies","interstellar","interstate"]',
+                output: "'inters'"
+            },
+            {
+                input: 'strs = ["throne","throne"]',
+                output: "'throne'"
+            },
+            {
+                input: 'strs = [""]',
+                output: "''"
+            },
+            {
+                input: 'strs = ["a"]',
+                output: "'a'"
+            },
+            {
+                input: 'strs = ["aa","a"]',
+                output: "'a'"
+            },
+            {
+                input: 'strs = ["aaa","aa","aaa"]',
+                output: "'aa'"
+            },
+            {
+                input: 'strs = ["ab","a"]',
+                output: "'a'"
+            }
+        ],
+        isPublished: true,
+        starterCode: {
+            cpp: `#include <vector>\n#include <string>\nusing namespace std;\nclass Solution {\npublic:\n    string longestCommonPrefix(vector<string>& strs) {\n        \n    }\n};`,
+            java: `public class Solution {\n    public String longestCommonPrefix(String[] strs) {\n        \n    }\n}`,
+            c: `#include <stdlib.h>\n#include <string.h>\nchar* longestCommonPrefix(char** strs, int strsSize) {\n    \n}`
+        },
+        functionSignature: {
+            cpp: "string longestCommonPrefix(vector<string>& strs)",
+            java: "public String longestCommonPrefix(String[] strs)",
+            c: "char* longestCommonPrefix(char** strs, int strsSize)"
+        },
+        functionName: "longestCommonPrefix",
+        customTestCaseInputTemplate: 'strs=["flower","flow","flight"]'
+    },
+    {
+        title: "Valid Parentheses",
+        description: "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid. An input string is valid if: Open brackets must be closed by the same type of brackets. Open brackets must be closed in the correct order. Every close bracket has a corresponding open bracket of the same type.",
+        difficulty: "Easy",
+        rating: 1300,
+        categories: ["String", "Stack"],
+        timeLimit: 2000,
+        memoryLimit: 512,
+        constraints: [
+            "1 ≤ s.length ≤ 10^4",
+            "s consists of parentheses only '()[]{}'"
+        ],
+        publicTestCases: [
+            {
+                input: 's = "()"',
+                output: "true",
+                explanation: "Simple valid parentheses."
+            },
+            {
+                input: 's = "()[]{}"',
+                output: "true",
+                explanation: "All brackets are properly closed."
+            }
+        ],
+        hiddenTestCases: [
+            {
+                input: 's = "(]"',
+                output: "false"
+            },
+            {
+                input: 's = "([)]"',
+                output: "false"
+            },
+            {
+                input: 's = "{[]}"',
+                output: "true"
+            },
+            {
+                input: 's = "((("',
+                output: "false"
+            },
+            {
+                input: 's = ")))"',
+                output: "false"
+            },
+            {
+                input: 's = "([{}])"',
+                output: "true"
+            },
+            {
+                input: 's = "(([]){})"',
+                output: "true"
+            }
+        ],
+        isPublished: true,
+        starterCode: {
+            cpp: `#include <string>\nusing namespace std;\nclass Solution {\npublic:\n    bool isValid(string s) {\n        \n    }\n};`,
+            java: `import java.util.*;\npublic class Solution {\n    public boolean isValid(String s) {\n        \n    }\n}`,
+            c: `#include <stdbool.h>\n#include <string.h>\nbool isValid(char* s) {\n    \n}`
+        },
+        functionSignature: {
+            cpp: "bool isValid(string s)",
+            java: "public boolean isValid(String s)",
+            c: "bool isValid(char* s)"
+        },
+        functionName: "isValid",
+        customTestCaseInputTemplate: 's="()"'
     }
 ];
 

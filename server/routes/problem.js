@@ -8,7 +8,8 @@ import {
     submitSolution,
     getProblemStats,
     getUserProblemStatus,
-    runCode
+    runCode,
+    runCustomTestCase
 } from '../controllers/problem.js';
 import { authenticateUser, authorizeRoles } from '../middleware/auth.js';
 import { getRecentSubmissions } from '../controllers/submission.js';
@@ -22,6 +23,7 @@ router.get('/:id', getProblem);
 router.use(authenticateUser);
 
 router.post('/:id/run', runCode);
+router.post('/:id/custom-test', runCustomTestCase);
 router.post('/:id/submit', submitSolution);
 router.get('/:problemId/status', getUserProblemStatus);
 router.get('/:id/recent-submissions', getRecentSubmissions);

@@ -79,7 +79,7 @@ const Problem = () => {
 
   const defaultCode = {
     java: `public class Solution {
-    public static int[] solution(int[] nums, int target) {
+    public static int[] twoSum(int[] nums, int target) {
         // Your solution here
         return new int[0];
     }

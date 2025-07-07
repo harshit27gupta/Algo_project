@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const API_BASE =  import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
 // Helper function to get auth token
 const getAuthToken = () => {
@@ -219,7 +219,7 @@ export const getRecentSubmissions = async (problemId, limit = 100) => {
 export const runCustomTest = async (problemId, code, language, customInput) => {
   try {
     const authInstance = createAuthInstance();
-    const res = await authInstance.post(`/problems/${problemId}/run`, {
+    const res = await authInstance.post(`/problems/${problemId}/custom-test`, {
       code,
       language,
       customInput
