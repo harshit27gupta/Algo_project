@@ -52,7 +52,7 @@
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/Algo_project.git
+   git clone https://github.com/harshit27gupta/Algo_project.git
    cd Algo_project
    ```
 
@@ -64,7 +64,19 @@
    ```
 
 3. **Set up environment variables:**
-   - Copy `.env.example` to `.env` in each service and fill in the required values.
+   - Create your env file with the following details
+   - | Server                | Client                | Compiler      | 
+     |-----------------------|-----------------------|---------------|
+     | PORT                  | VITE_GOOGLE_CLIENT_ID | PORT          |
+     | MONGODB_URI           | VITE_API_URL          | 688ms         | 
+     | JWT_SECRET            |                       |               | 
+     | JWT_EXPIRE            |                       |               | 
+     | NODE_ENV              |                       |               | 
+     | GOOGLE_CLIENT_ID      |                       |               | 
+     | GOOGLE_CLIENT_SECRET  |                       |               |
+     | GEMINI_API_KEY        |                       |               |
+     | COMPILER_URL          |                       |               |
+
 
 4. **Start services (development mode):**
    ```bash
