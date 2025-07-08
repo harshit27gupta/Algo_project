@@ -128,9 +128,3 @@ The system has been thoroughly tested to ensure it can handle high loads and pro
 - Warnings are treated as errors for better feedback.
 - Error lines are highlighted in the code editor.
 - Java submissions are fully isolated to prevent file conflicts.
-
----
-
-## 🏆 Conclusion
-
-Algo_project is a robust, production-ready online judge system. It delivers fast, reliable performance, supports multi-language code execution, and provides a user-friendly experience for both learners and competitive programmers.
