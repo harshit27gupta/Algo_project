@@ -68,7 +68,7 @@
    - | Server                | Client                | Compiler      | 
      |-----------------------|-----------------------|---------------|
      | PORT                  | VITE_GOOGLE_CLIENT_ID | PORT          |
-     | MONGODB_URI           | VITE_API_URL          | 688ms         | 
+     | MONGODB_URI           | VITE_API_URL          |               | 
      | JWT_SECRET            |                       |               | 
      | JWT_EXPIRE            |                       |               | 
      | NODE_ENV              |                       |               | 
