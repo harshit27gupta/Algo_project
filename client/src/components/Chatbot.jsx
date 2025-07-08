@@ -9,6 +9,7 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [lastFailedMessage, setLastFailedMessage] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -81,14 +82,79 @@ const Chatbot = () => {
       }
     } catch (error) {
       console.error('Chatbot error:', error);
+      
+      let errorText = "I'm sorry, I'm having trouble responding right now. Please try again later.";
+      let toastMessage = 'Failed to get chatbot response';
+      
+      // Personalized error messages based on error type
+      if (error.response) {
+        // Server responded with error status
+        const status = error.response.status;
+        const data = error.response.data;
+        
+        switch (status) {
+          case 401:
+            errorText = "It looks like you need to log in to use the AI assistant. Please sign in and try again!\n\n💡 Tip: Make sure you're logged into your account.";
+            toastMessage = 'Please log in to use the chatbot';
+            break;
+          case 403:
+            errorText = "You don't have permission to use the AI assistant right now. Please contact support if this is an error.\n\n💡 Tip: This might be a temporary restriction.";
+            toastMessage = 'Access denied';
+            break;
+          case 429:
+            errorText = "You're sending messages too quickly! Please wait a moment before sending another message.\n\n💡 Tip: Try waiting 10-15 seconds between messages.";
+            toastMessage = 'Rate limit exceeded - please slow down';
+            break;
+          case 500:
+            errorText = "The AI service is experiencing technical difficulties. Our team has been notified and is working on it.\n\n💡 Tip: This is usually temporary. Try again in a few minutes.";
+            toastMessage = 'Server error - please try again later';
+            break;
+          case 503:
+            errorText = "The AI service is temporarily unavailable for maintenance. Please check back in a few minutes.\n\n💡 Tip: We're making improvements! Check back soon.";
+            toastMessage = 'Service temporarily unavailable';
+            break;
+          default:
+            if (data && data.message) {
+              errorText = data.message;
+              toastMessage = data.message;
+            } else {
+              errorText = "I'm experiencing some technical difficulties. Please try again in a moment.";
+              toastMessage = 'Technical error occurred';
+            }
+        }
+      } else if (error.request) {
+        // Network error - no response received
+        errorText = "I can't connect to the AI service right now. Please check your internet connection and try again.\n\n💡 Tip: Check if your internet is working and try refreshing the page.";
+        toastMessage = 'Network error - check your connection';
+      } else if (error.code === 'ECONNABORTED') {
+        // Request timeout
+        errorText = "The request is taking too long to process. Please try again with a shorter message.\n\n💡 Tip: Try breaking your question into smaller parts.";
+        toastMessage = 'Request timeout - try a shorter message';
+      } else if (error.message) {
+        // Other specific errors
+        if (error.message.includes('Network Error')) {
+          errorText = "I'm having trouble connecting to the server. Please check your internet connection.\n\n💡 Tip: Try refreshing the page or check your network settings.";
+          toastMessage = 'Network connection issue';
+        } else if (error.message.includes('timeout')) {
+          errorText = "The AI is taking longer than expected to respond. Please try again.\n\n💡 Tip: The AI might be busy. Try again in a moment.";
+          toastMessage = 'Response timeout';
+        } else {
+          errorText = `I encountered an issue: ${error.message}. Please try again.\n\n💡 Tip: If this keeps happening, try refreshing the page.`;
+          toastMessage = 'Unexpected error occurred';
+        }
+      }
+      
       const errorMessage = {
         id: Date.now() + 1,
-        text: "I'm sorry, I'm having trouble responding right now. Please try again later.",
+        text: errorText,
         sender: 'bot',
-        timestamp: new Date()
+        timestamp: new Date(),
+        isError: true,
+        canRetry: status !== 401 && status !== 403 // Don't allow retry for auth errors
       };
       setMessages(prev => [...prev, errorMessage]);
-      toast.error('Failed to get chatbot response');
+      setLastFailedMessage(userMessage.text);
+      toast.error(toastMessage);
     } finally {
       setIsLoading(false);
     }
@@ -98,6 +164,17 @@ const Chatbot = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const handleRetry = () => {
+    if (lastFailedMessage) {
+      setInputMessage(lastFailedMessage);
+      setLastFailedMessage(null);
+      // Remove the last error message
+      setMessages(prev => prev.filter(msg => !msg.isError));
+      // Focus on input for user to send
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   };
 
@@ -142,7 +219,7 @@ const Chatbot = () => {
                   key={message.id} 
                   className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`}
                 >
-                  <div className="message-content">
+                  <div className={`message-content ${message.isError ? 'error-message' : ''}`}>
                     <div className="message-text">
                       {message.text.split('\n').map((line, index) => (
                         <React.Fragment key={index}>
@@ -154,6 +231,17 @@ const Chatbot = () => {
                     <div className="message-time">
                       {formatTime(message.timestamp)}
                     </div>
+                    {message.isError && message.canRetry && (
+                      <div className="error-actions">
+                        <button 
+                          className="retry-button"
+                          onClick={handleRetry}
+                          title="Try sending the message again"
+                        >
+                          🔄 Try Again
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

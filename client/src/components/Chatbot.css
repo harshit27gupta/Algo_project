@@ -187,6 +187,54 @@
   border: 1px solid #e9ecef;
 }
 
+/* Error message styling */
+.bot-message .message-content.error-message {
+  background: #fff5f5;
+  color: #c53030;
+  border: 1px solid #fed7d7;
+  border-left: 4px solid #e53e3e;
+  box-shadow: 0 2px 8px rgba(229, 62, 62, 0.1);
+}
+
+.bot-message .message-content.error-message .message-text {
+  font-weight: 500;
+}
+
+.bot-message .message-content.error-message::before {
+  content: "⚠️ ";
+  margin-right: 4px;
+}
+
+/* Error actions */
+.error-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.retry-button {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.retry-button:hover {
+  background: #c53030;
+  transform: translateY(-1px);
+}
+
+.retry-button:active {
+  transform: translateY(0);
+}
+
 .message-text {
   line-height: 1.5;
   margin-bottom: 4px;
