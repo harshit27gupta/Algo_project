@@ -6,6 +6,10 @@
 
 ---
 
+
+<img width="5668" height="2312" alt="Online judge flow" src="https://github.com/user-attachments/assets/432f944c-67b0-4220-a801-7e29e20f559c" />
+
+
 ## ✨ Features
 
 - **User Authentication**
