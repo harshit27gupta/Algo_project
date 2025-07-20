@@ -6,6 +6,10 @@
 
 ---
 
+
+<img width="5668" height="2312" alt="Online judge flow" src="https://github.com/user-attachments/assets/432f944c-67b0-4220-a801-7e29e20f559c" />
+
+
 ## ✨ Features
 
 - **User Authentication**
@@ -128,9 +132,3 @@ The system has been thoroughly tested to ensure it can handle high loads and pro
 - Warnings are treated as errors for better feedback.
 - Error lines are highlighted in the code editor.
 - Java submissions are fully isolated to prevent file conflicts.
-
----
-
-## 🏆 Conclusion
-
-Algo_project is a robust, production-ready online judge system. It delivers fast, reliable performance, supports multi-language code execution, and provides a user-friendly experience for both learners and competitive programmers.
