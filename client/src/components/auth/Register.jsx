@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaLock, FaGoogle } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaGoogle, FaEye, FaEyeSlash } from 'react-icons/fa';
 import './Auth.css';
 import { registerUser } from '../../services/api';
 
@@ -31,6 +31,8 @@ const Register = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [touched, setTouched] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -172,7 +174,7 @@ const Register = () => {
             <div className="input-group">
               <FaLock className="input-icon" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 id="password"
                 name="password"
                 value={formData.password}
@@ -184,6 +186,14 @@ const Register = () => {
                 disabled={loading || success}
                 onBlur={handleChange}
               />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={loading || success}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
             {touched.password && validateField('password', formData.password) && (
               <span className="auth-error" style={{ marginBottom: 0 }}>{validateField('password', formData.password)}</span>
@@ -195,7 +205,7 @@ const Register = () => {
             <div className="input-group">
               <FaLock className="input-icon" />
               <input
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 id="confirmPassword"
                 name="confirmPassword"
                 value={formData.confirmPassword}
@@ -206,6 +216,14 @@ const Register = () => {
                 disabled={loading || success}
                 onBlur={handleChange}
               />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                disabled={loading || success}
+              >
+                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
             {touched.confirmPassword && validateField('confirmPassword', formData.confirmPassword) && (
               <span className="auth-error" style={{ marginBottom: 0 }}>{validateField('confirmPassword', formData.confirmPassword)}</span>

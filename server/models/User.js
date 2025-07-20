@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
     fullName: {
@@ -34,6 +35,8 @@ const userSchema = new mongoose.Schema({
         default: 'user',
         index: true
     },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
     createdAt: {
         type: Date,
         default: Date.now,
@@ -79,6 +82,22 @@ userSchema.statics.findByEmail = function(email) {
 
 userSchema.statics.existsByEmail = function(email) {
     return this.exists({ email: email.toLowerCase() });
+};
+
+userSchema.methods.getResetPasswordToken = function() {
+    // Generate token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+
+    // Hash token and set to resetPasswordToken field
+    this.resetPasswordToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+    // Set expire
+    this.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    return resetToken;
 };
 
 // Example: Set connection pool size in your mongoose.connect call (e.g. in server/index.js):

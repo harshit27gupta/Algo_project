@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaEnvelope, FaLock, FaGoogle } from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaGoogle, FaEye, FaEyeSlash } from 'react-icons/fa';
 import './Auth.css';
 import { loginUser, googleLogin as googleLoginAPI } from '../../services/api';
 import { GoogleLogin } from '@react-oauth/google';
@@ -14,6 +14,7 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -108,7 +109,7 @@ const Login = () => {
             <div className="input-group">
               <FaLock className="input-icon" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 id="password"
                 name="password"
                 value={formData.password}
@@ -116,6 +117,13 @@ const Login = () => {
                 placeholder="Enter your password"
                 required
               />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
           </div>
 

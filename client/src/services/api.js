@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE =  import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const API_BASE =   import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
 // Helper function to get auth token
 const getAuthToken = () => {
@@ -230,6 +230,35 @@ export const runCustomTest = async (problemId, code, language, customInput) => {
       err.response?.data?.message ||
       err.response?.data?.error ||
       'Failed to run custom test. Please try again.'
+    );
+  }
+};
+
+export const forgotPassword = async (email) => {
+  try {
+    const res = await axios.post(`${API_BASE}/auth/forgotpassword`, { email });
+    return res.data;
+  } catch (err) {
+    throw new Error(
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      'Failed to send reset email. Please try again.'
+    );
+  }
+};
+
+export const resetPassword = async (token, password) => {
+  try {
+    const res = await axios.put(`${API_BASE}/auth/resetpassword/${token}`, { 
+      token, 
+      password 
+    });
+    return res.data;
+  } catch (err) {
+    throw new Error(
+      err.response?.data?.message ||
+      err.response?.data?.error ||
+      'Failed to reset password. Please try again.'
     );
   }
 };

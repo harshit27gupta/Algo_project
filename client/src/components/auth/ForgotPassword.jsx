@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FaEnvelope } from 'react-icons/fa';
+import { forgotPassword } from '../../services/api.js';
 import './Auth.css';
 
 const ForgotPassword = () => {
@@ -16,8 +17,7 @@ const ForgotPassword = () => {
     setLoading(true);
 
     try {
-      // TODO: Implement forgot password logic
-      console.log('Forgot password attempt:', email);
+      await forgotPassword(email);
       setSuccess(true);
     } catch (err) {
       setError(err.message || 'Failed to process request. Please try again.');
