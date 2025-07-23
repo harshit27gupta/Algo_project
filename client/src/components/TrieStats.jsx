@@ -17,7 +17,7 @@ const TrieStats = () => {
     const currentStats = trieManager.getStats();
     setStats(currentStats);
 
-    // Get learned words for each language
+      
     const javaWords = trieManager.getAllWords('java', 50);
     const cppWords = trieManager.getAllWords('cpp', 50);
     const cWords = trieManager.getAllWords('c', 50);

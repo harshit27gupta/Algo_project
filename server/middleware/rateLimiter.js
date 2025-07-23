@@ -13,7 +13,6 @@ export const authLimiter = rateLimit({
         return req.headers['x-test-mode'] === 'true';
     },
     handler: (req, res) => {
-        console.log(`🚫 Rate limit exceeded for auth: ${req.ip}`);
         res.status(429).json({
             success: false,
             error: 'Too many attempts, please try again after 15 minutes'
@@ -34,7 +33,6 @@ export const apiLimiter = rateLimit({
         return req.headers['x-test-mode'] === 'true';
     },
     handler: (req, res) => {
-        console.log(`🚫 Rate limit exceeded for API: ${req.ip} - ${req.method} ${req.url}`);
         res.status(429).json({
             success: false,
             error: 'Too many requests, please try again later'
@@ -52,7 +50,6 @@ export const testLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     handler: (req, res) => {
-        console.log(`🚫 Test rate limit exceeded: ${req.ip}`);
         res.status(429).json({
             success: false,
             error: 'Test rate limit exceeded'

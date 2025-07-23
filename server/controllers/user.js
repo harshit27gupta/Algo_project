@@ -19,7 +19,6 @@ export const getUserProfile = async (req, res) => {
             data: user
         });
     } catch (error) {
-        console.error('Error fetching user profile:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: 'Failed to fetch user profile'
@@ -72,7 +71,6 @@ export const updateUserProfile = async (req, res) => {
             data: updatedUser
         });
     } catch (error) {
-        console.error('Error updating user profile:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: error.message || 'Failed to update profile'
@@ -146,7 +144,6 @@ export const getUserSubmissions = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error fetching user submissions:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: 'Failed to fetch submissions'
@@ -230,7 +227,6 @@ export const getUserStats = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error fetching user statistics:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: 'Failed to fetch statistics'
@@ -310,7 +306,6 @@ export const getSolvedProblems = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error fetching solved problems:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: 'Failed to fetch solved problems'

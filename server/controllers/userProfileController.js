@@ -14,7 +14,6 @@ export const getUserProfile = async (req, res) => {
             data: user
         });
     } catch (error) {
-        console.error('Error fetching user profile:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: 'Failed to fetch user profile'
@@ -57,7 +56,6 @@ export const updateUserProfile = async (req, res) => {
             data: updatedUser
         });
     } catch (error) {
-        console.error('Error updating user profile:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: error.message || 'Failed to update profile'

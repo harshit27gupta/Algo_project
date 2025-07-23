@@ -4,14 +4,10 @@ import { useRef, useEffect } from 'react';
 import trieManager from '../utils/TrieManager';
 
 const CodeEditor = ({ language, code, onChange }) => {
-  // Debug log to confirm mounting and props
-  console.log('[DEBUG] CodeEditor mounted/rendered with language:', language, 'code:', code);
   const monacoRef = useRef(null);
 
-  // Learn from code on mount and whenever code/language changes
   useEffect(() => {
     if (code && code.length > 10) {
-      console.log('[DEBUG] [CodeEditor] Learning from code:', code);
       trieManager.learnFromCode(code, language);
     }
   }, [code, language]);
@@ -19,25 +15,20 @@ const CodeEditor = ({ language, code, onChange }) => {
   const handleEditorDidMount = (editor, monaco) => {
     monacoRef.current = monaco;
 
-    // Remove previous provider if any
     if (monaco._trieProviderDisposable) {
       monaco._trieProviderDisposable.dispose();
     }
 
-    // Register a merged completion provider
     monaco._trieProviderDisposable = monaco.languages.registerCompletionItemProvider(
       language === 'cpp' ? 'cpp' : language,
       {
         triggerCharacters: ['.', ...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'],
         async provideCompletionItems(model, position) {
-          // 1. Get Monaco's default suggestions (if any)
           let defaultSuggestions = [];
           if (monaco.languages.registerCompletionItemProvider._original) {
-            // If monkey-patched, call the original
             defaultSuggestions = await monaco.languages.registerCompletionItemProvider._original(model, position);
           }
 
-          // 2. Get trie suggestions
           const textUntilPosition = model.getValueInRange({
             startLineNumber: position.lineNumber,
             startColumn: 1,
@@ -61,7 +52,6 @@ const CodeEditor = ({ language, code, onChange }) => {
             }));
           }
 
-          // 3. Merge and return
           return {
             suggestions: [...(defaultSuggestions?.suggestions || []), ...trieSuggestions]
           };

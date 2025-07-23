@@ -264,7 +264,6 @@
   transform: translateY(-1px);
 }
 
-/* Scrollbar Styling */
 .trie-stats-content::-webkit-scrollbar {
   width: 8px;
 }
@@ -282,7 +281,6 @@
   background: #7a7a7a;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .trie-stats-modal {
     width: 95%;
@@ -314,7 +312,6 @@
   }
 }
 
-/* Animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -330,7 +327,7 @@
   animation: fadeIn 0.3s ease-out;
 }
 
-/* High Contrast Mode */
+  
 @media (prefers-contrast: high) {
   .trie-stats-modal {
     border: 2px solid #ffffff;

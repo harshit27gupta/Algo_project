@@ -110,7 +110,6 @@ const Register = () => {
 
   const handleGoogleSignup = () => {
     // TODO: Implement Google OAuth
-    console.log('Google signup clicked');
   };
 
   return (

@@ -78,7 +78,6 @@ export const generateProblemHint = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error generating hint:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to generate hint. Please try again.'
@@ -132,7 +131,6 @@ export const getChatbotResponse = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error getting chatbot response:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to get response. Please try again.'
@@ -160,7 +158,6 @@ export const getHintCountForProblem = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error getting hint count:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to get hint count.'

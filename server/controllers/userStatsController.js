@@ -75,7 +75,6 @@ export const getUserStats = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error fetching user statistics:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: 'Failed to fetch statistics'

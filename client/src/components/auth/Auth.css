@@ -14,8 +14,6 @@
   --shadow: 0 4px 24px rgba(37, 99, 235, 0.07);
   --font-main: 'Inter', 'Poppins', sans-serif;
 }
-
-/* Auth Container */
 .auth-container {
   min-height: 100vh;
   display: flex;
@@ -34,8 +32,6 @@
   max-width: 400px;
   border: 1.5px solid var(--border);
 }
-
-/* Typography */
 .auth-title {
   font-size: 1.75rem;
   font-weight: 800;
@@ -52,7 +48,6 @@
   font-size: 1.05rem;
 }
 
-/* Form Elements */
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -102,7 +97,6 @@ input:focus {
   box-shadow: 0 0 0 2px var(--accent);
 }
 
-/* Form Options */
 .form-options {
   display: flex;
   justify-content: space-between;
@@ -127,7 +121,6 @@ input:focus {
   text-decoration: underline;
 }
 
-/* Buttons */
 .auth-button {
   width: 100%;
   padding: 0.75rem;
@@ -178,7 +171,6 @@ input:focus {
   cursor: not-allowed;
 }
 
-/* Divider */
 .divider {
   display: flex;
   align-items: center;
@@ -198,7 +190,6 @@ input:focus {
   padding: 0 1rem;
 }
 
-/* Error Message */
 .auth-error {
   background: #fff5f5;
   color: var(--error);
@@ -209,7 +200,6 @@ input:focus {
   border: 1.5px solid #fecaca;
 }
 
-/* Success Message */
 .auth-success {
   background: #f0fff4;
   color: var(--success);
@@ -220,7 +210,6 @@ input:focus {
   border: 1.5px solid #bbf7d0;
 }
 
-/* Footer */
 .auth-footer {
   text-align: center;
   margin-top: 2rem;
@@ -238,7 +227,6 @@ input:focus {
   text-decoration: underline;
 }
 
-/* Responsive Design */
 @media (max-width: 480px) {
   .auth-card {
     padding: 1.5rem;
@@ -260,14 +248,12 @@ input:focus {
   }
 }
 
-/* Loading State */
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* Remove the spinner for now */
 /* .auth-button.primary:disabled::after {
   content: '';
   display: inline-block;
@@ -280,7 +266,6 @@ input:focus {
   margin-left: 0.5rem;
 } */
 
-/* Password Toggle Button */
 .password-toggle {
   position: absolute;
   right: 1rem;
@@ -304,7 +289,7 @@ input:focus {
   cursor: not-allowed;
 }
 
-/* Adjust input padding for password fields with toggle */
+
 input[type="password"] {
   padding-right: 3rem;
 } 

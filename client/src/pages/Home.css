@@ -1,5 +1,4 @@
 :root {
-  /* Unique Online Judge Color Palette */
   --oj-primary: #3b82f6;
   --oj-accent: #1d4ed8;
   --oj-success: #10b981;
@@ -7,12 +6,10 @@
   --oj-error: #ef4444;
   --oj-info: #0891b2;
   
-  /* Difficulty Colors */
   --oj-easy: #10b981;
   --oj-medium: #f59e0b;
   --oj-hard: #ef4444;
   
-  /* Rating Colors */
   --oj-master: #7c3aed;
   --oj-expert: #dc2626;
   --oj-advanced: #ea580c;
@@ -21,7 +18,6 @@
   --oj-novice: #0891b2;
   --oj-unrated: #6b7280;
   
-  /* Legacy variables for compatibility */
   --primary: var(--oj-primary);
   --accent: var(--oj-accent);
   --success: var(--oj-success);
@@ -48,7 +44,6 @@ body {
   background-color: var(--background);
 }
 
-/* Header Styles */
 .home-header {
   background: linear-gradient(135deg, var(--oj-primary) 0%, var(--oj-accent) 100%);
   color: white;
@@ -153,14 +148,12 @@ body {
   display: none;
 }
 
-/* Main Content Styles */
 .home-main {
   max-width: 1200px;
   margin: 2rem auto;
   padding: 0 1rem;
 }
 
-/* Search and Filters */
 .problems-header {
   margin-bottom: 2rem;
 }
@@ -216,7 +209,6 @@ body {
   border-color: var(--primary);
 }
 
-/* Problems List */
 .problems-list {
   display: flex;
   flex-direction: column;
@@ -333,7 +325,6 @@ body {
   color: var(--subtle-text);
 }
 
-/* Auth Buttons */
 .auth-button {
   padding: 0.5rem 1.2rem;
   border-radius: var(--radius-btn);
@@ -375,7 +366,6 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Responsive Design */
 @media (max-width: 900px) {
   .home-main, .header-content {
     padding: 0 0.5rem;
@@ -483,8 +473,7 @@ body {
   opacity: 1;
   transform: translateX(-50%) scale(1);
   pointer-events: auto;
-}
-/* Make toast narrower and centered on small screens */
+} 
 @media (max-width: 600px) {
   .Toastify__toast-container {
     width: 100vw !important;
@@ -501,7 +490,6 @@ body {
   }
 }
 
-/* Loading and Error States */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -569,7 +557,6 @@ body {
   font-size: 1.1rem;
 }
 
-/* Rating Display */
 .rating {
   color: var(--primary);
   font-weight: 500;
@@ -580,7 +567,6 @@ body {
   border: 1px solid rgba(56, 189, 248, 0.2);
 }
 
-/* Rating Color Classes */
 .rating.master {
   color: #7c3aed;
   background: rgba(124, 58, 237, 0.1);
@@ -623,7 +609,6 @@ body {
   border-color: rgba(107, 114, 128, 0.2);
 }
 
-/* Filter Controls */
 .filter-controls {
   display: flex;
   gap: 1rem;
@@ -685,7 +670,6 @@ body {
   color: white;
 }
 
-/* Filters Panel */
 .filters-panel {
   background: var(--card);
   border: 1px solid var(--border);
@@ -747,7 +731,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* Filter Badges */
 .difficulty-badge {
   padding: 0.4rem 0.8rem;
   border-radius: 20px;
@@ -824,7 +807,6 @@ body {
   transition: all 0.2s ease;
 }
 
-/* Results Info */
 .results-info {
   margin-bottom: 1rem;
   padding: 0.75rem 1rem;
@@ -840,7 +822,7 @@ body {
   font-size: 0.95rem;
 }
 
-/* Clear Filters Button */
+  
 .clear-filters-btn {
   margin-top: 1rem;
   padding: 0.75rem 1.5rem;

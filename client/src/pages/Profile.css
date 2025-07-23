@@ -1,11 +1,11 @@
-/* Profile Container */
+
 .profile-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #333;
 }
 
-/* Profile Header */
+
 .profile-header {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
@@ -50,7 +50,7 @@
   font-weight: 700;
 }
 
-/* Profile Main Layout */
+
 .profile-main {
   max-width: 1200px;
   margin: 0 auto;
@@ -61,7 +61,7 @@
   min-height: calc(100vh - 80px);
 }
 
-/* Profile Sidebar */
+
 .profile-sidebar {
   display: flex;
   flex-direction: column;
@@ -147,7 +147,7 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-/* Profile Navigation */
+
 .profile-nav {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
@@ -184,7 +184,7 @@
   color: white;
 }
 
-/* Profile Content */
+
 .profile-content {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
@@ -195,7 +195,7 @@
   min-height: 600px;
 }
 
-/* Overview Tab */
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -244,7 +244,7 @@
   font-size: 0.9rem;
 }
 
-/* Edit Profile Form */
+
 .edit-profile-form {
   background: #f8fafc;
   border-radius: 12px;
@@ -320,7 +320,7 @@
   background: #e5e7eb;
 }
 
-/* Difficulty Stats */
+
 .difficulty-stats {
   margin-top: 2rem;
 }
@@ -380,7 +380,7 @@
   color: #666;
 }
 
-/* Submissions Tab */
+
 .submissions-header {
   display: flex;
   justify-content: space-between;
@@ -416,7 +416,7 @@
   border-color: #667eea;
 }
 
-/* Submission Cards */
+
 .submissions-list {
   display: flex;
   flex-direction: column;
@@ -572,7 +572,7 @@
   color: #333;
 }
 
-/* Solved Problems Tab */
+
 .solved-tab h3 {
   margin: 0 0 2rem;
   color: #333;
@@ -644,7 +644,7 @@
   color: #333;
 }
 
-/* Pagination */
+
 .pagination {
   display: flex;
   justify-content: center;
@@ -680,7 +680,7 @@
   font-weight: 500;
 }
 
-/* Loading and Error States */
+
 .profile-loading,
 .profile-error,
 .submission-loading {
@@ -724,7 +724,7 @@
   transform: translateY(-2px);
 }
 
-/* Empty state styles */
+
 .empty-state {
   text-align: center;
   color: #888;
@@ -733,7 +733,7 @@
   opacity: 0.85;
 }
 
-/* Responsive Design */
+  
 @media (max-width: 1024px) {
   .profile-main {
     grid-template-columns: 1fr;

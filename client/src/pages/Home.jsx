@@ -51,7 +51,7 @@ const Home = () => {
 
   const handleLogout = () => {
     setLogoutLoading(true);
-    // Get userId from localStorage before removing user
+   
     let userId = 'guest';
     try {
       const userStr = localStorage.getItem('user');
@@ -69,39 +69,39 @@ const Home = () => {
       setUser(null);
       setLogoutLoading(false);
       toast.success('Logged out!');
-      fetchProblems(); // Re-fetch problems for guest
+      fetchProblems(); 
       navigate('/');
     }, 1500);
   };
 
-  // Get problem status for current user
+ 
   const getProblemStatus = (problem) => {
-    // Use the userStatus from the backend response
+   
     return problem.userStatus || 'unsolved';
   };
 
-  // Filter problems based on search query and filters
+ 
   const filteredProblems = problems.filter(problem => {
-    // Search filter
+   
     const matchesSearch = problem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          problem.description.toLowerCase().includes(searchQuery.toLowerCase());
     
-    // Difficulty filter (multiple selection - OR logic)
+   
     const matchesDifficulty = filters.difficulty.length === 0 || 
                              filters.difficulty.includes(problem.difficulty.toLowerCase());
     
-    // Category filter (multiple selection - OR logic)
+   
     const matchesCategory = filters.category.length === 0 || 
                            problem.categories.some(cat => 
                              filters.category.includes(cat.toLowerCase().replace(' ', '-'))
                            );
     
-    // Status filter (multiple selection - OR logic)
+   
     const problemStatus = getProblemStatus(problem);
     const matchesStatus = filters.status.length === 0 || 
                          filters.status.includes(problemStatus);
     
-    // Rating filter (multiple selection - OR logic)
+   
     const matchesRating = filters.rating.length === 0 || 
                          filters.rating.some(ratingRange => {
                            const [min, max] = ratingRange.split('-').map(Number);
@@ -111,10 +111,10 @@ const Home = () => {
     return matchesSearch && matchesDifficulty && matchesCategory && matchesStatus && matchesRating;
   });
 
-  // Get unique categories from problems
+ 
   const uniqueCategories = [...new Set(problems.flatMap(problem => problem.categories))];
 
-  // Rating ranges for filtering
+ 
   const ratingRanges = [
     { label: '1000-1299', value: '1000-1299' },
     { label: '1300-1599', value: '1300-1599' },
@@ -124,7 +124,7 @@ const Home = () => {
     { label: '2500+', value: '2500-9999' }
   ];
 
-  // Function to get rating color class
+ 
   const getRatingColorClass = (rating) => {
     if (rating >= 2500) return 'master';
     if (rating >= 2200) return 'expert';
@@ -135,17 +135,15 @@ const Home = () => {
     return 'unrated';
   };
 
-  // Handle filter changes
+  
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => {
       const newFilters = { ...prev };
       
       if (filterType === 'difficulty' || filterType === 'category' || filterType === 'status' || filterType === 'rating') {
         if (newFilters[filterType].includes(value)) {
-          // Remove if already selected
           newFilters[filterType] = newFilters[filterType].filter(item => item !== value);
         } else {
-          // Add if not selected
           newFilters[filterType] = [...newFilters[filterType], value];
         }
       }
@@ -154,7 +152,7 @@ const Home = () => {
     });
   };
 
-  // Clear all filters
+  
   const clearAllFilters = () => {
     setFilters({
       difficulty: [],
@@ -162,10 +160,10 @@ const Home = () => {
       status: [],
       rating: []
     });
-    setSearchQuery('');
+    setSearchQuery(''); 
   };
 
-  // Get active filter count
+
   const getActiveFilterCount = () => {
     return filters.difficulty.length + filters.category.length + filters.status.length + filters.rating.length + (searchQuery ? 1 : 0);
   };

@@ -26,11 +26,8 @@ const executeJava = (filePath, inputFilePath = null) => {
                             if (fs.existsSync(filePath)) fs.unlinkSync(filePath); 
                         }
                     } catch (e) {
-                        console.log("Error deleting file/directory:", e);
                     } 
                 }, 20000);
-                console.log('Java compilation error - compileStderr:', compileStderr);
-                console.log('Java compilation error - compileErr:', compileErr);
                 
                 let errorMessage = compileStderr;
                 if (compileStderr.includes('class not found') || compileStderr.includes('cannot find symbol')) {
@@ -64,20 +61,16 @@ const executeJava = (filePath, inputFilePath = null) => {
                             if (fs.existsSync(filePath)) fs.unlinkSync(filePath); 
                         }
                     } catch (e) {
-                        console.log("Error deleting file/directory:", e);
                     } 
                 }, 20000);
                 setTimeout(() => { 
                     try { 
                         if (fs.existsSync(classFile)) fs.unlinkSync(classFile); 
                     } catch (e) {
-                        console.log("Error deleting class file:", e);
                     } 
                 }, 20000);
                 if (runErr) {
-                    console.log('Java runtime error - runStderr:', runStderr);
-                    console.log('Java runtime error - runErr:', runErr);
-                        
+                    
                     let errorMessage = runStderr;
                     if (runStderr.includes('NoClassDefFoundError') || runStderr.includes('ClassNotFoundException')) {
                         errorMessage = 'Class not found at runtime: The compiled class could not be found. This may be due to a class name mismatch.';

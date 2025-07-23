@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 import HintUsage from '../models/HintUsage.js';
 import mongoose from 'mongoose';
 
-// Load environment variables
 dotenv.config();
 
 const ai = new GoogleGenAI({
@@ -50,7 +49,6 @@ Instructions: Generate hint number ${hintNumber} for this problem.
     });
     return stripMarkdown(response.text);
   } catch (error) {
-    console.error('Error generating hint:', error);
     return `Sorry, I couldn't generate a hint right now. Please try again later.`;
   }
 }

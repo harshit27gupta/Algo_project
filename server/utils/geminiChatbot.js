@@ -106,7 +106,6 @@ Do not use markdown, asterisks, or any special formatting like bold or italics. 
     return stripMarkdown(response.text);
     
   } catch (error) {
-    console.error('Error generating chatbot response:', error);
     return `I'm sorry, I'm having trouble responding right now. Please try again later or contact support.`;
   }
 }
@@ -145,7 +144,6 @@ Please provide helpful guidance on this programming question.
     return stripMarkdown(response.text);
     
   } catch (error) {
-    console.error('Error generating programming help:', error);
     return `I'm sorry, I'm having trouble providing programming help right now. Please try again later.`;
   }
 } 

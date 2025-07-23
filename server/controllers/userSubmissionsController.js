@@ -59,7 +59,6 @@ export const getUserSubmissions = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error fetching user submissions:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: 'Failed to fetch submissions'
@@ -136,7 +135,6 @@ export const getSolvedProblems = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error fetching solved problems:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: 'Failed to fetch solved problems'

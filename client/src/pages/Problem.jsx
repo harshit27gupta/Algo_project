@@ -32,7 +32,6 @@ import axios from 'axios';
 import HintModal from '../components/HintModal';
 import '../components/HintModal.css';
 
-// Get userId from localStorage (assume user is stored as JSON with _id)
 let userId = 'guest';
 try {
   const userStr = localStorage.getItem('user');
@@ -75,7 +74,6 @@ const Problem = () => {
     { value: 'cpp', label: 'C++', extension: '.cpp' },
     { value: 'c', label: 'C', extension: '.c' }
   ];
-  // console.log("constraints are", problem.constraints)
 
   const defaultCode = {
     java: `public class Solution {
@@ -112,7 +110,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     }
   }, [problem]);
 
-  // Function to get the appropriate template code
   const getTemplateCode = useCallback(() => {
     if (problem && problem.starterCode && problem.starterCode[language]) {
       return problem.starterCode[language];
@@ -120,7 +117,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     return defaultCode[language];
   }, [language, problem]);
 
-  // Function to reset code to template
   const handleResetCode = useCallback(() => {
     if (hasUnsavedChanges) {
       const confirmed = window.confirm('Are you sure you want to reset your code? This will discard all your changes.');
@@ -134,7 +130,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     toast.success('Code reset to template!');
   }, [userId, id, language, getTemplateCode, hasUnsavedChanges]);
 
-  // Load saved code or template on language/problem change
   useEffect(() => {
     if (!id || !language) return;
     
@@ -149,7 +144,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     }
   }, [language, problem, id, getTemplateCode, userId]);
 
-  // Save code to localStorage when it changes
   useEffect(() => {
     if (!id || !language || !code) return;
     
@@ -165,7 +159,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     }
   }, [code, language, id, getTemplateCode, userId]);
 
-  // Warn user before leaving with unsaved changes
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (hasUnsavedChanges) {
@@ -179,7 +172,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Ctrl/Cmd + R to reset code
@@ -193,7 +185,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleResetCode]);
 
-  // Fetch hint count on mount or when id changes
   useEffect(() => {
     const fetchHintCount = async () => {
       try {
@@ -210,7 +201,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     if (id) fetchHintCount();
   }, [id]);
 
-  // Fetch user hints on problem load
   useEffect(() => {
     const fetchHints = async () => {
       try {
@@ -242,7 +232,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
   };
 
   const handleRunCode = async () => {
-    console.log('[RunButton] handleRunCode called');
     if (!code.trim()) {
       toast.error('Please write some code before running');
       return;
@@ -251,9 +240,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     try {
       setRunningCode(true);
       setRunResult(null);
-      console.log('[RunButton] Sending request to /run:', { id, code, language });
       const response = await runCode(id, code, language);
-      console.log('[RunButton] Response:', response);
       setRunResult(response.data);
       setActiveTab('run_result'); // Switch to the result tab
       toast.success('Code executed successfully!');
@@ -335,7 +322,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     }
   };
 
-  // Handle Get Hint button click
   const handleGetHint = async () => {
     if (!problem) return;
     if (hints.length >= 2) {
@@ -372,7 +358,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     }
   };
 
-  // When opening the modal, fetch hints if empty
   const handleViewHints = async () => {
     if (hints.length === 0) {
       try {
@@ -389,9 +374,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     setShowHintModal(true);
   };
 
-  // Handle custom test execution
   const handleRunCustomTest = async () => {
-    console.log('[CustomTest] handleRunCustomTest called', customInput);
     if (!customInput.trim()) {
       toast.error('Please enter test input');
       return;
@@ -400,21 +383,15 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     try {
       setRunningCustomTest(true);
       setCustomTestResult(null);
-      console.log('[CustomTest] Sending request to /run:', { id, code, language, customInput });
       const response = await runCustomTest(id, code, language, customInput);
-      console.log('[CustomTest] Response:', response);
       setCustomTestResult(response.data);
       toast.success('Custom test executed successfully!');
     } catch (err) {
-      console.error('[CustomTest] Error:', err);
       toast.error(err.message);
     } finally {
       setRunningCustomTest(false);
     }
   };
-
-  // Debug log to check setCode before rendering
-  console.log('[DEBUG] setCode:', setCode, 'typeof:', typeof setCode);
 
   if (loading) {
     return (
@@ -606,7 +583,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
                     <button 
                       className="run-custom-test-btn"
                       onClick={() => {
-                        console.log('[CustomTest] Button clicked', customInput);
                         handleRunCustomTest();
                       }}
                       disabled={!customInput.trim() || runningCustomTest}
@@ -850,7 +826,6 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
             <button 
               className="run-button"
               onClick={() => {
-                console.log('[RunButton] Button clicked');
                 handleRunCode();
               }}
               disabled={runningCode || submitting}

@@ -16,7 +16,6 @@ class Trie {
     this.languages = new Set();
   }
 
-  // Insert a word into the trie
   insert(word, language = 'general', frequency = 1) {
     if (!word || typeof word !== 'string') return false;
     
@@ -49,7 +48,6 @@ class Trie {
     return true;
   }
 
-  // Search for words with given prefix
   search(prefix, language = null, limit = 20) {
     if (!prefix || typeof prefix !== 'string') return [];
     

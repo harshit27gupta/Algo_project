@@ -33,7 +33,6 @@ class TrieManager {
       this.loadLearnedWords();
 
       this.isInitialized = true;
-      console.log('TrieManager initialized successfully');
     } catch (error) {
       console.error('Error initializing TrieManager:', error);
     }
@@ -82,8 +81,6 @@ class TrieManager {
         this.trie.insert(keyword, language, freq);
       }
     });
-
-    console.log(`Loaded ${keywords.length} keywords for ${language}`);
   }
 
   // Get autocomplete suggestions
@@ -127,7 +124,6 @@ class TrieManager {
     const success = this.trie.learnWord(word, lang);
     
     if (success) {
-      console.log(`[TrieManager] Learned word: '${word}' for language: ${lang}`);
       this.saveLearnedWords();
     }
     
@@ -144,9 +140,6 @@ class TrieManager {
         learnedCount++;
       }
     });
-    if (learnedCount > 0) {
-      console.log(`[TrieManager] Learned ${learnedCount} words for language: ${language}`);
-    }
     return learnedCount;
   }
 
@@ -215,7 +208,6 @@ class TrieManager {
       if (saved) {
         const data = JSON.parse(saved);
         this.trie.importData(data);
-        console.log('Loaded learned words from localStorage');
       }
     } catch (error) {
       console.error('Error loading learned words:', error);
@@ -230,7 +222,6 @@ class TrieManager {
       this.trie = new Trie();
       this.isInitialized = false;
       this.initialize();
-      console.log('Cleared all learned words');
     } catch (error) {
       console.error('Error clearing learned words:', error);
     }

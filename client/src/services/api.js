@@ -2,12 +2,10 @@ import axios from 'axios';
 
 const API_BASE =   import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
-// Helper function to get auth token
 const getAuthToken = () => {
   return localStorage.getItem('token') || sessionStorage.getItem('token');
 };
 
-// Helper function to create authenticated axios instance
 const createAuthInstance = () => {
   const token = getAuthToken();
   return axios.create({
@@ -103,7 +101,6 @@ export const submitSolution = async (problemId, code, language) => {
   }
 };
 
-// User Profile APIs
 export const getUserProfile = async () => {
   try {
     const authInstance = createAuthInstance();
@@ -182,7 +179,6 @@ export const getSolvedProblems = async (page = 1, limit = 10) => {
   }
 };
 
-// Get single problem by ID
 export const getProblem = async (problemId) => {
   try {
     const res = await axios.get(`${API_BASE}/problems/${problemId}`);

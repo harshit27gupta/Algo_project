@@ -35,7 +35,7 @@ const Login = () => {
         email: formData.email,
         password: formData.password
       });
-      // Clear both storages first
+   
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       sessionStorage.removeItem('token');
@@ -59,12 +59,11 @@ const Login = () => {
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       const data = await googleLoginAPI(credentialResponse.credential);
-      // Clear both storages first
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       sessionStorage.removeItem('token');
       sessionStorage.removeItem('user');
-      // Use rememberMe for storage type
+      
       if (formData.rememberMe) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));

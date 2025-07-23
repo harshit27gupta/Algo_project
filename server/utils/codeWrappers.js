@@ -1,13 +1,10 @@
 export function wrapCppCode(userCode, testInput, functionName, functionSignature) {
-  // Extract return type from function signature
   const returnTypeMatch = functionSignature?.match(/^(\w+(?:<[^>]+>)?)\s+/) || ['', 'int'];
   const resultType = returnTypeMatch[1];
 
-  // Parse input parameters
   let inputLines = [];
   let params = [];
   
-  // Handle different input formats
   const matches = [...testInput.matchAll(/(\w+)\s*=\s*(\[[^\]]*\]|"[^"]*"|\S+)/g)];
   
   for (const match of matches) {
@@ -16,21 +13,16 @@ export function wrapCppCode(userCode, testInput, functionName, functionSignature
     params.push(varName);
     
     if (value.startsWith('[')) {
-      // Array input
       const arr = value.replace(/[\[\]\s]/g, '').split(',').filter(Boolean);
       if (arr.length > 0 && arr[0].includes('"')) {
-        // String array
         const stringArr = value.match(/"([^"]*)"/g) || [];
         inputLines.push(`vector<string> ${varName} = {${stringArr.join(',')}};`);
       } else {
-        // Integer array
         inputLines.push(`vector<int> ${varName} = {${arr.join(',')}};`);
       }
     } else if (value.startsWith('"')) {
-      // String input
       inputLines.push(`string ${varName} = ${value};`);
     } else {
-      // Numeric or boolean input
       if (value === 'true' || value === 'false') {
         inputLines.push(`bool ${varName} = ${value};`);
       } else {
@@ -39,7 +31,6 @@ export function wrapCppCode(userCode, testInput, functionName, functionSignature
     }
   }
 
-  // Generate appropriate print statement based on return type
   let printResult = '';
   if (resultType === 'vector<int>') {
     printResult = `cout << "[";\n    for (size_t i = 0; i < result.size(); ++i) {\n        cout << result[i];\n        if (i + 1 < result.size()) cout << ",";\n    }\n    cout << "]" << endl;`;
@@ -71,15 +62,12 @@ int main() {
 }
 
 export function wrapJavaCode(userCode, testInput, functionName, functionSignature) {
-  // Extract return type from function signature
   const returnTypeMatch = functionSignature?.match(/^public\s+(\w+(?:<[^>]+>)?)\s+/) || ['', 'int'];
   const resultType = returnTypeMatch[1];
 
-  // Parse input parameters
   let inputLines = [];
   let params = [];
   
-  // Handle different input formats
   const matches = [...testInput.matchAll(/(\w+)\s*=\s*(\[[^\]]*\]|"[^"]*"|\S+)/g)];
   
   for (const match of matches) {
@@ -88,21 +76,16 @@ export function wrapJavaCode(userCode, testInput, functionName, functionSignatur
     params.push(varName);
     
     if (value.startsWith('[')) {
-      // Array input
       const arr = value.replace(/[\[\]\s]/g, '').split(',').filter(Boolean);
       if (arr.length > 0 && arr[0].includes('"')) {
-        // String array
         const stringArr = value.match(/"([^"]*)"/g) || [];
         inputLines.push(`String[] ${varName} = {${stringArr.join(',')}};`);
       } else {
-        // Integer array
         inputLines.push(`int[] ${varName} = {${arr.join(',')}};`);
       }
     } else if (value.startsWith('"')) {
-      // String input
       inputLines.push(`String ${varName} = ${value};`);
     } else {
-      // Numeric or boolean input
       if (value === 'true' || value === 'false') {
         inputLines.push(`boolean ${varName} = ${value};`);
       } else {
@@ -111,7 +94,6 @@ export function wrapJavaCode(userCode, testInput, functionName, functionSignatur
     }
   }
 
-  // Generate appropriate print statement based on return type
   let printResult = '';
   if (resultType === 'int[]') {
     printResult = `System.out.print("[");\n        for (int i = 0; i < result.length; i++) {\n            System.out.print(result[i]);\n            if (i + 1 < result.length) System.out.print(",");\n        }\n        System.out.println("]");`;
@@ -129,7 +111,6 @@ export function wrapJavaCode(userCode, testInput, functionName, functionSignatur
 
   const mainMethod = `\n    public static void main(String[] args) {\n        ${inputLines.join('\n        ')}\n        Solution solution = new Solution();\n        ${resultType} result = solution.${functionName}(${params.join(', ')});\n        ${printResult}\n    }`;
 
-  // Insert main and helpers into user code
   const hasClass = userCode.includes('public class ') || userCode.includes('class ');
   if (hasClass) {
     let modifiedCode = userCode.replace(/public\s+class\s+[A-Za-z0-9_]+/, 'public class Solution');
@@ -145,17 +126,14 @@ export function wrapJavaCode(userCode, testInput, functionName, functionSignatur
 }
 
 export function wrapCCode(userCode, testInput, functionName, functionSignature) {
-  // Extract return type from function signature
   const returnTypeMatch = functionSignature?.match(/^(\w+(?:\*)?)\s+/) || ['', 'int'];
   const resultType = returnTypeMatch[1];
 
-  // Parse input parameters
   let inputLines = [];
   let params = [];
   let returnSizeLine = '';
   let returnSizeParam = '';
   
-  // Handle different input formats
   const matches = [...testInput.matchAll(/(\w+)\s*=\s*(\[[^\]]*\]|"[^"]*"|\S+)/g)];
   
   for (const match of matches) {
@@ -163,26 +141,21 @@ export function wrapCCode(userCode, testInput, functionName, functionSignature) 
     let value = match[2].trim();
     
     if (value.startsWith('[')) {
-      // Array input
       const arr = value.replace(/[\[\]\s]/g, '').split(',').filter(Boolean);
       if (arr.length > 0 && arr[0].includes('"')) {
-        // String array - C doesn't handle this well, but we'll try
         const stringArr = value.match(/"([^"]*)"/g) || [];
         inputLines.push(`char* ${varName}[] = {${stringArr.join(',')}};`);
         inputLines.push(`int ${varName}Size = ${stringArr.length};`);
         params.push(varName, `${varName}Size`);
       } else {
-        // Integer array
         inputLines.push(`int ${varName}[] = {${arr.join(',')}};`);
         inputLines.push(`int ${varName}Size = ${arr.length};`);
         params.push(varName, `${varName}Size`);
       }
     } else if (value.startsWith('"')) {
-      // String input
       inputLines.push(`char* ${varName} = ${value};`);
       params.push(varName);
     } else {
-      // Numeric input
       if (value === 'true' || value === 'false') {
         inputLines.push(`bool ${varName} = ${value};`);
       } else {
@@ -192,13 +165,11 @@ export function wrapCCode(userCode, testInput, functionName, functionSignature) 
     }
   }
 
-  // Add returnSize parameter for array return types
   if (resultType === 'int*' || resultType === 'char*') {
     returnSizeLine = 'int returnSize;';
     returnSizeParam = ', &returnSize';
   }
 
-  // Generate appropriate print statement based on return type
   let printResult = '';
   if (resultType === 'int*') {
     printResult = `printf("[");\n    for (int i = 0; i < returnSize; i++) {\n        printf("%d", result[i]);\n        if (i + 1 < returnSize) printf(",");\n    }\n    printf("]\\n");\n    free(result);`;

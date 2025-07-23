@@ -13,7 +13,6 @@ const Chatbot = () => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -22,14 +21,12 @@ const Chatbot = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Focus input when chatbot opens
   useEffect(() => {
     if (isOpen && inputRef.current) {
       setTimeout(() => inputRef.current.focus(), 100);
     }
   }, [isOpen]);
 
-  // Initialize with welcome message
   useEffect(() => {
     setMessages([
       {
@@ -81,14 +78,11 @@ const Chatbot = () => {
         throw new Error(response.data.message || 'Failed to get response');
       }
     } catch (error) {
-      console.error('Chatbot error:', error);
       
       let errorText = "I'm sorry, I'm having trouble responding right now. Please try again later.";
       let toastMessage = 'Failed to get chatbot response';
       
-      // Personalized error messages based on error type
       if (error.response) {
-        // Server responded with error status
         const status = error.response.status;
         const data = error.response.data;
         
@@ -123,15 +117,12 @@ const Chatbot = () => {
             }
         }
       } else if (error.request) {
-        // Network error - no response received
         errorText = "I can't connect to the AI service right now. Please check your internet connection and try again.\n\n💡 Tip: Check if your internet is working and try refreshing the page.";
         toastMessage = 'Network error - check your connection';
       } else if (error.code === 'ECONNABORTED') {
-        // Request timeout
         errorText = "The request is taking too long to process. Please try again with a shorter message.\n\n💡 Tip: Try breaking your question into smaller parts.";
         toastMessage = 'Request timeout - try a shorter message';
       } else if (error.message) {
-        // Other specific errors
         if (error.message.includes('Network Error')) {
           errorText = "I'm having trouble connecting to the server. Please check your internet connection.\n\n💡 Tip: Try refreshing the page or check your network settings.";
           toastMessage = 'Network connection issue';
@@ -150,7 +141,7 @@ const Chatbot = () => {
         sender: 'bot',
         timestamp: new Date(),
         isError: true,
-        canRetry: status !== 401 && status !== 403 // Don't allow retry for auth errors
+        canRetry: status !== 401 && status !== 403
       };
       setMessages(prev => [...prev, errorMessage]);
       setLastFailedMessage(userMessage.text);
@@ -171,9 +162,7 @@ const Chatbot = () => {
     if (lastFailedMessage) {
       setInputMessage(lastFailedMessage);
       setLastFailedMessage(null);
-      // Remove the last error message
       setMessages(prev => prev.filter(msg => !msg.isError));
-      // Focus on input for user to send
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   };

@@ -18,7 +18,6 @@ const executeC = (filePath, inputFilePath = null) => {
     exec(`gcc -Werror=return-type  "${filePath}" -o "${outPath}"`, (compileErr, compileStdout, compileStderr) => {
       if (compileErr) {
         setTimeout(() => { try { fs.unlinkSync(filePath); } catch (e) {
-          console.log("Error deleting file:", e);
         } }, 20000);
         return reject({ error: compileStderr, stderr: compileStderr });
       }   
@@ -30,10 +29,8 @@ const executeC = (filePath, inputFilePath = null) => {
       exec(runCmd, (runErr, runStdout, runStderr) => {
         const execTime = Date.now() - startTime;
         setTimeout(() => { try { fs.unlinkSync(filePath); } catch (e) {
-          console.log("Error deleting file:", e);
         } }, 20000);
         setTimeout(() => { try { fs.unlinkSync(outPath); } catch (e) {
-          console.log("Error deleting output file:", e);
         } }, 20000);
         if (runErr) {
           return reject({ error: runStderr, stderr: runStderr });

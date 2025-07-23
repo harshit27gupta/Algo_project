@@ -55,17 +55,12 @@ export const runCode = async (req, res) => {
         }
         if (language === 'c') userCodeFixed = enforceCSignature(code, requiredSignature, requiredName);
         const wrappedCode = wrapCodeFn(userCodeFixed, testCase.input, requiredName);
-        if (language === 'c') {
-          console.log('WRAPPED C CODE:');
-          console.log(wrappedCode);
-        }
         try {
             const compileRes = await axios.post(COMPILER_URL, {
                 language,
                 code: wrappedCode,
                 input: ''
             }, { timeout: 10000 });
-            console.log('RAW COMPILER STDERR:', compileRes.data.stderr);
             const errorObj = cleanCompilerError(compileRes.data.stderr || '', language, code);
             let output = (compileRes.data.stdout || '').trim();
             if (output.endsWith(',')) output = output.slice(0, -1);
@@ -81,9 +76,6 @@ export const runCode = async (req, res) => {
                 execTime: compileRes.data.execTime || null
             });
         } catch (err) {
-            console.log('RAW COMPILER ERROR:', err);
-            console.log('RAW COMPILER ERROR RESPONSE:', err.response?.data);
-            console.log('RAW COMPILER ERROR STDERR:', err.response?.data?.stderr || err.message);
             let errorMessage = '';
             if (err.response?.data?.stderr) {
                 errorMessage = typeof err.response.data.stderr === 'string' 
@@ -294,7 +286,6 @@ export const submitSolution = async (req, res) => {
                 const memoryUsed = Math.floor(Math.random() * 50) + 10;
                 totalMemoryUsed = Math.max(totalMemoryUsed, memoryUsed);
             } catch (error) {
-                console.error('Error executing test case:', error);
                 status = 'runtime_error';
                 errorMessage = error.message || 'Execution failed';
                 await Submission.create({
@@ -354,7 +345,6 @@ export const submitSolution = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error submitting solution:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: 'Failed to submit solution'

@@ -689,7 +689,6 @@ const seedDatabase = async () => {
     try {
         // Connect to MongoDB
         await mongoose.connect(process.env.MONGODB_URI);
-        console.log('Connected to MongoDB');
 
         // Create an admin user if it doesn't exist
         const adminUser = await User.findOne({ email: 'admin@example.com' });
@@ -703,15 +702,12 @@ const seedDatabase = async () => {
                 role: 'admin'
             });
             adminId = newAdmin._id;
-            console.log('Created admin user');
         } else {
             adminId = adminUser._id;
-            console.log('Admin user already exists');
         }
 
         // Delete existing problems
         await Problem.deleteMany({});
-        console.log('Deleted existing problems');
 
         // Add admin ID to all problems
         const problemsWithAuthor = testProblems.map(problem => ({
@@ -721,12 +717,9 @@ const seedDatabase = async () => {
 
         // Insert new problems
         await Problem.insertMany(problemsWithAuthor);
-        console.log('Added test problems');
 
-        console.log('Database seeded successfully');
         process.exit(0);
     } catch (error) {
-        console.error('Error seeding database:', error);
         process.exit(1);
     }
 };

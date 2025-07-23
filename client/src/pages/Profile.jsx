@@ -59,7 +59,6 @@ const Profile = () => {
 
   useEffect(() => {
     if (activeTab === 'submissions') {
-      console.log('Fetching submissions with filters:', submissionFilters);
       fetchSubmissions();
     } else if (activeTab === 'solved') {
       fetchSolvedProblems();
@@ -100,7 +99,6 @@ const Profile = () => {
       };
       
       const response = await getUserSubmissions(filters);
-      console.log('Submissions response:', response); // Debug log
       
       if (response.data && response.data.submissions) {
         // Keep all submissions but ensure they have basic structure
@@ -108,14 +106,12 @@ const Profile = () => {
           submission && submission._id
         );
         setSubmissions(validSubmissions);
-        console.log('Valid submissions:', validSubmissions); // Debug log
       } else {
         setSubmissions([]);
       }
       
       setSubmissionPagination(response.data.pagination || { page: 1, total: 0, pages: 0 });
     } catch (err) {
-      console.error('Error fetching submissions:', err);
       toast.error(err.message || 'Failed to fetch submissions');
       setSubmissions([]);
     } finally {

@@ -1,4 +1,4 @@
-/* Chatbot Toggle Button */
+
 .chatbot-toggle {
   position: fixed;
   bottom: 30px;
@@ -28,7 +28,7 @@
   display: none;
 }
 
-/* Chatbot Overlay */
+
 .chatbot-overlay {
   position: fixed;
   top: 0;
@@ -48,7 +48,7 @@
   to { opacity: 1; }
 }
 
-/* Chatbot Container */
+
 .chatbot-container {
   width: 90%;
   max-width: 450px;
@@ -74,7 +74,7 @@
   }
 }
 
-/* Chatbot Header */
+
 .chatbot-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -112,7 +112,7 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Chatbot Messages */
+
 .chatbot-messages {
   flex: 1;
   padding: 20px;
@@ -138,7 +138,7 @@
   background: #a8a8a8;
 }
 
-/* Message Styles */
+
 .message {
   margin-bottom: 16px;
   animation: messageSlide 0.3s ease;
@@ -187,7 +187,7 @@
   border: 1px solid #e9ecef;
 }
 
-/* Error message styling */
+
 .bot-message .message-content.error-message {
   background: #fff5f5;
   color: #c53030;
@@ -205,7 +205,7 @@
   margin-right: 4px;
 }
 
-/* Error actions */
+
 .error-actions {
   margin-top: 8px;
   display: flex;
@@ -263,7 +263,7 @@
   text-align: left;
 }
 
-/* Typing Indicator */
+
 .typing-indicator {
   display: flex;
   gap: 4px;
@@ -297,7 +297,7 @@
   }
 }
 
-/* Chatbot Input */
+
 .chatbot-input {
   padding: 20px;
   background: white;
@@ -361,7 +361,7 @@
   font-size: 16px;
 }
 
-/* Responsive Design */
+  
 @media (max-width: 768px) {
   .chatbot-toggle {
     bottom: 20px;
