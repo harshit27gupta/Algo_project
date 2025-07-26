@@ -1,0 +1,24 @@
+{
+  "name": "algo-project",
+  "version": "1.0.0",
+  "description": "Full-stack online judge platform for competitive programming",
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install && cd ../Compiler && npm install",
+    "dev": "docker-compose -f docker-compose.dev.yml up --build",
+    "prod": "docker-compose up --build",
+    "lint": "cd client && npm run lint && cd ../server && npm run lint",
+    "lint:fix": "cd client && npm run lint -- --fix && cd ../server && npm run lint:fix"
+  },
+  "keywords": [
+    "online-judge",
+    "competitive-programming",
+    "code-execution",
+    "algorithms",
+    "coding-platform"
+  ],
+  "author": "harshit27gupta",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

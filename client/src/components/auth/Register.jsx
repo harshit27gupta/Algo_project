@@ -108,9 +108,10 @@ const Register = () => {
     }
   };
 
-  const handleGoogleSignup = () => {
-    // TODO: Implement Google OAuth
-  };
+  // TODO: Implement Google OAuth
+  // const handleGoogleSignup = () => {
+  //   // Implementation needed
+  // };
 
   return (
     <div className="auth-container">

@@ -41,6 +41,11 @@ app.use('/api/v1/problems', problemRoutes);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/ai', aiRoutes);
 
+// Health check endpoint
+app.get('/api/v1/health', (req, res) => {
+  res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
 app.use(errorHandler);
 
 mongoose.connect(process.env.MONGODB_URI)

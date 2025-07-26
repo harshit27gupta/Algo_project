@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { 
   FaArrowLeft, 
   FaPlay, 
@@ -24,7 +24,7 @@ import {
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getProblem, submitSolution, runCode, runCustomTest } from '../services/api';
-import { saveCode, loadCode, clearCode, hasSavedCode } from '../utils/codePersistence';
+import { saveCode, loadCode, clearCode } from '../utils/codePersistence';
 import './Problem.css';
 import CodeEditor from '../components/CodeEditor';
 import RecentSubmissions from '../components/RecentSubmissions';
@@ -39,11 +39,12 @@ try {
     const userObj = JSON.parse(userStr);
     if (userObj && userObj._id) userId = userObj._id;
   }
-} catch (e) {}
+} catch (error) {
+  console.warn('Failed to parse user data:', error);
+}
 
 const Problem = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   
   const [problem, setProblem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -194,7 +195,8 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         setHintsRemaining(res.data.data.hintsRemaining);
-      } catch (err) {
+      } catch (error) {
+        console.warn('Failed to fetch hint count:', error);
         setHintsRemaining(2); // fallback
       }
     };
@@ -210,7 +212,8 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         setHints(res.data.data.hints || []);
-      } catch (err) {
+      } catch (error) {
+        console.warn('Failed to fetch hints initially:', error);
         setHints([]);
       }
     };
@@ -367,7 +370,8 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         setHints(res.data.data.hints || []);
-      } catch (err) {
+      } catch (error) {
+        console.warn('Failed to fetch hints for modal:', error);
         setHints([]);
       }
     }

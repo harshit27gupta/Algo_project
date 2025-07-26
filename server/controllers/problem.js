@@ -299,15 +299,15 @@ function wrapCppCode(userCode, testInput, functionName, functionSignature) {
   const resultType = returnTypeMatch ? returnTypeMatch[0].trim() : 'int';
 
   // Parse input parameters
-  let inputLines = [];
-  let params = [];
+  const inputLines = [];
+  const params = [];
   
   // Handle different input formats
   const matches = [...testInput.matchAll(/(\w+)\s*=\s*(\[[^\]]*\]|"[^"]*"|\S+)/g)];
   
   for (const match of matches) {
     const varName = match[1];
-    let value = match[2].trim();
+    const value = match[2].trim();
     params.push(varName);
     
     if (value.startsWith('[')) {
@@ -395,13 +395,13 @@ function cleanCompilerError(stderr, language, originalUserCode = '') {
   }
   
   const lines = stderr.split('\n');
-  let formatted = [];
-  let errorLines = [];
-  for (let line of lines) {
+  const formatted = [];
+  const errorLines = [];
+  for (const line of lines) {
     const match = line.match(regex);
     if (match) {
-      let userLine = Math.max(1, parseInt(match[2], 10) - USER_CODE_LINE_OFFSET);
-      let message = language === 'java'
+      const userLine = Math.max(1, parseInt(match[2], 10) - USER_CODE_LINE_OFFSET);
+      const message = language === 'java'
         ? match[4].trim()
         : match[4].replace(/\s*\[[^\]]*\]$/, '').trim();
       formatted.push(`Line ${userLine}: error: ${message}`);
@@ -826,15 +826,15 @@ function wrapJavaCode(userCode, testInput, functionName, functionSignature) {
   const resultType = returnTypeMatch ? returnTypeMatch[1].trim() : 'int';
 
   // Parse input parameters
-  let inputLines = [];
-  let params = [];
+  const inputLines = [];
+  const params = [];
   
   // Handle different input formats
   const matches = [...testInput.matchAll(/(\w+)\s*=\s*(\[[^\]]*\]|"[^"]*"|\S+)/g)];
   
   for (const match of matches) {
     const varName = match[1];
-    let value = match[2].trim();
+    const value = match[2].trim();
     params.push(varName);
     
     if (value.startsWith('[')) {
@@ -900,8 +900,8 @@ function wrapCCode(userCode, testInput, functionName, functionSignature) {
   const resultType = returnTypeMatch ? returnTypeMatch[1] : 'int';
 
   // Parse input parameters
-  let inputLines = [];
-  let params = [];
+  const inputLines = [];
+  const params = [];
   let returnSizeLine = '';
   let returnSizeParam = '';
   
@@ -910,7 +910,7 @@ function wrapCCode(userCode, testInput, functionName, functionSignature) {
   
   for (const match of matches) {
     const varName = match[1];
-    let value = match[2].trim();
+    const value = match[2].trim();
     
     if (value.startsWith('[')) {
       // Array input

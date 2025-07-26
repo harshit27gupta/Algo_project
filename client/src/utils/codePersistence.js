@@ -25,6 +25,7 @@ export const saveCode = (userId, problemId, language, code) => {
     const key = getStorageKey(userId, problemId, language);
     localStorage.setItem(key, code);
   } catch (error) {
+    console.warn('Failed to save code to localStorage:', error);
   }
 };
 
@@ -39,7 +40,7 @@ export const loadCode = (userId, problemId, language) => {
   try {
     const key = getStorageKey(userId, problemId, language);
     return localStorage.getItem(key);
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -55,6 +56,7 @@ export const clearCode = (userId, problemId, language) => {
     const key = getStorageKey(userId, problemId, language);
     localStorage.removeItem(key);
   } catch (error) {
+    console.warn('Failed to clear code from localStorage:', error);
   }
 };
 
@@ -69,7 +71,7 @@ export const hasSavedCode = (userId, problemId, language) => {
   try {
     const key = getStorageKey(userId, problemId, language);
     return localStorage.getItem(key) !== null;
-  } catch (error) {
+  } catch {
     return false;
   }
 };
@@ -91,6 +93,7 @@ export const getAllSavedCodes = (userId, problemId) => {
       }
     });
   } catch (error) {
+    console.warn('Failed to get all saved codes:', error);
   }
   return savedCodes;
 };
@@ -103,5 +106,6 @@ export const clearAllUserCodes = (userId) => {
       }
     });
   } catch (error) {
+    console.warn('Failed to clear all user codes:', error);
   }
 }; 

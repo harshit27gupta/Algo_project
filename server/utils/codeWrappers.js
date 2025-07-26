@@ -2,14 +2,14 @@ export function wrapCppCode(userCode, testInput, functionName, functionSignature
   const returnTypeMatch = functionSignature?.match(/^(\w+(?:<[^>]+>)?)\s+/) || ['', 'int'];
   const resultType = returnTypeMatch[1];
 
-  let inputLines = [];
-  let params = [];
+  const inputLines = [];
+  const params = [];
   
   const matches = [...testInput.matchAll(/(\w+)\s*=\s*(\[[^\]]*\]|"[^"]*"|\S+)/g)];
   
   for (const match of matches) {
     const varName = match[1];
-    let value = match[2].trim();
+    const value = match[2].trim();
     params.push(varName);
     
     if (value.startsWith('[')) {
@@ -65,14 +65,14 @@ export function wrapJavaCode(userCode, testInput, functionName, functionSignatur
   const returnTypeMatch = functionSignature?.match(/^public\s+(\w+(?:<[^>]+>)?)\s+/) || ['', 'int'];
   const resultType = returnTypeMatch[1];
 
-  let inputLines = [];
-  let params = [];
+  const inputLines = [];
+  const params = [];
   
   const matches = [...testInput.matchAll(/(\w+)\s*=\s*(\[[^\]]*\]|"[^"]*"|\S+)/g)];
   
   for (const match of matches) {
     const varName = match[1];
-    let value = match[2].trim();
+    const value = match[2].trim();
     params.push(varName);
     
     if (value.startsWith('[')) {
@@ -129,8 +129,8 @@ export function wrapCCode(userCode, testInput, functionName, functionSignature) 
   const returnTypeMatch = functionSignature?.match(/^(\w+(?:\*)?)\s+/) || ['', 'int'];
   const resultType = returnTypeMatch[1];
 
-  let inputLines = [];
-  let params = [];
+  const inputLines = [];
+  const params = [];
   let returnSizeLine = '';
   let returnSizeParam = '';
   
@@ -138,7 +138,7 @@ export function wrapCCode(userCode, testInput, functionName, functionSignature) 
   
   for (const match of matches) {
     const varName = match[1];
-    let value = match[2].trim();
+    const value = match[2].trim();
     
     if (value.startsWith('[')) {
       const arr = value.replace(/[\[\]\s]/g, '').split(',').filter(Boolean);

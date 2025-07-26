@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { forgotPassword, resetPassword } from '../../services/api.js';
+import { resetPassword } from '../../services/api.js';
 import './Auth.css';
 
 const ResetPassword = () => {

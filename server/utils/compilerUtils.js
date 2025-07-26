@@ -33,13 +33,13 @@ export function cleanCompilerError(stderr, language, originalUserCode = '') {
     regex = /(?:.*[\\/])?([A-Za-z0-9_\.]+):(\d+):(?:\d+:)?\s*(error|warning):\s*(.*)/;
   }
   const lines = stderr.split('\n');
-  let formatted = [];
-  let errorLines = [];
-  for (let line of lines) {
+  const formatted = [];
+  const errorLines = [];
+  for (const line of lines) {
     const match = line.match(regex);
     if (match) {
-      let userLine = Math.max(1, parseInt(match[2], 10) - USER_CODE_LINE_OFFSET);
-      let message = language === 'java'
+      const userLine = Math.max(1, parseInt(match[2], 10) - USER_CODE_LINE_OFFSET);
+      const message = language === 'java'
         ? match[4].trim()
         : match[4].replace(/\s*\[[^\]]*\]$/, '').trim();
       formatted.push(`Line ${userLine}: error: ${message}`);

@@ -119,7 +119,7 @@ class Trie {
   }
 
   // Update frequency of a word (for learning)
-  updateFrequency(word, language = 'general') {
+  updateFrequency(word) {
     if (!word || typeof word !== 'string') return false;
     
     word = word.toLowerCase().trim();

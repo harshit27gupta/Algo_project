@@ -59,7 +59,9 @@ const Home = () => {
         const userObj = JSON.parse(userStr);
         if (userObj && userObj._id) userId = userObj._id;
       }
-    } catch (e) {}
+    } catch (error) {
+      console.warn('Failed to parse user data during logout:', error);
+    }
     clearAllUserCodes(userId);
     setTimeout(() => {
       localStorage.removeItem('token');

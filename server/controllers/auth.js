@@ -96,7 +96,7 @@ export const login = async (req, res, next) => {
             });
         }
 
-        let user = await User.findByEmail(email).select('+password');
+        const user = await User.findByEmail(email).select('+password');
         if (!user) {
             return res.status(401).json({
                 success: false,
