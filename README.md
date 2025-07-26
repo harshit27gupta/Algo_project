@@ -60,38 +60,55 @@
    cd Algo_project
    ```
 
-2. **Install dependencies:**
+2. **Install all dependencies:**
    ```bash
-   cd server && npm install
-   cd ../Compiler && npm install
-   cd ../client && npm install
+   npm run install:all
    ```
 
 3. **Set up environment variables:**
-   - Create your env file with the following details
-   - | Server                | Client                | Compiler      | 
-     |-----------------------|-----------------------|---------------|
-     | PORT                  | VITE_GOOGLE_CLIENT_ID | PORT          |
-     | MONGODB_URI           | VITE_API_URL          |               | 
-     | JWT_SECRET            |                       |               | 
-     | JWT_EXPIRE            |                       |               | 
-     | NODE_ENV              |                       |               | 
-     | GOOGLE_CLIENT_ID      |                       |               | 
-     | GOOGLE_CLIENT_SECRET  |                       |               |
-     | GEMINI_API_KEY        |                       |               |
-     | COMPILER_URL          |                       |               |
-
+   Copy the example environment files and update them with your configuration:
+   ```bash
+   cp server/.env.example server/.env
+   cp client/.env.example client/.env
+   cp Compiler/.env.example Compiler/.env
+   ```
+   
+   **Required environment variables:**
+   - **Server**: `MONGODB_URI`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GEMINI_API_KEY`
+   - **Client**: `VITE_GOOGLE_CLIENT_ID`, `VITE_API_URL`
+   - **Compiler**: `PORT` (optional, defaults to 8000)
 
 4. **Start services (development mode):**
    ```bash
-   docker-compose -f docker-compose.dev.yml up --build
+   # Option 1: Using Docker (recommended)
+   npm run dev
+   
+   # Option 2: Manual start (requires MongoDB running locally)
+   # Terminal 1 - Server
+   cd server && npm run server
+   
+   # Terminal 2 - Compiler Service  
+   cd Compiler && npm run compiler
+   
+   # Terminal 3 - Client
+   cd client && npm run dev
    ```
-   Or run each service manually for local development.
 
-5. **Access the app:**
-   - Frontend: [http://localhost:3000](http://localhost:3000)
+5. **Access the application:**
+   - Frontend: [http://localhost:5173](http://localhost:5173) (development) or [http://localhost:3000](http://localhost:3000) (production)
    - Backend API: [http://localhost:5000/api/v1](http://localhost:5000/api/v1)
    - Compiler Service: [http://localhost:8000](http://localhost:8000)
+   - Health Checks: 
+     - Server: [http://localhost:5000/api/v1/health](http://localhost:5000/api/v1/health)
+     - Compiler: [http://localhost:8000/health](http://localhost:8000/health)
+
+### Development Commands
+
+From the root directory:
+- `npm run install:all` - Install dependencies for all services
+- `npm run dev` - Start all services with Docker
+- `npm run lint` - Run linting for client and server
+- `npm run lint:fix` - Automatically fix linting issues
 
 ### Production Deployment
 
@@ -132,3 +149,39 @@ The system has been thoroughly tested to ensure it can handle high loads and pro
 - Warnings are treated as errors for better feedback.
 - Error lines are highlighted in the code editor.
 - Java submissions are fully isolated to prevent file conflicts.
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on:
+
+- Setting up the development environment
+- Code style and quality standards  
+- Submitting pull requests
+- Adding new features
+
+### Quick Contribution Setup
+```bash
+git clone https://github.com/harshit27gupta/Algo_project.git
+cd Algo_project
+npm run install:all
+cp server/.env.example server/.env
+# Update environment variables
+npm run dev
+```
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with modern web technologies (React, Node.js, Express, MongoDB)
+- Containerized with Docker for easy deployment
+- Load tested with Artillery for production readiness
+- AI-powered features using Google's Gemini API
