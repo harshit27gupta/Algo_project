@@ -160,7 +160,7 @@ export const forgotPassword = async (req, res, next) => {
         await user.save({ validateBeforeSave: false });
 
         // Create reset url
-        const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+        const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
         const message = `You are receiving this email because you (or someone else) has requested the reset of a password.
 

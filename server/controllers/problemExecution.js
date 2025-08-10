@@ -6,7 +6,7 @@ import axios from 'axios';
 import { wrapCppCode, wrapJavaCode, wrapCCode } from '../utils/codeWrappers.js';
 import { enforceCppSignature, enforceJavaSignature, enforceCSignature } from '../utils/signatureUtils.js';
 import { cleanCompilerError, addJavaImports } from '../utils/compilerUtils.js';
-
+const COMPILER_URL =  process.env.VITE_COMPILER_URL ;
 export const runCode = async (req, res) => {
     const { id } = req.params;
     const { code, language } = req.body;
@@ -43,7 +43,7 @@ export const runCode = async (req, res) => {
       requiredName = problem.functionName || 'solution';
       wrapCodeFn = wrapJavaCode;
     }
-    const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
+      
     const results = [];
     for (let i = 0; i < problem.publicTestCases.length; i++) {
         const testCase = problem.publicTestCases[i];
@@ -139,7 +139,6 @@ export const submitSolution = async (req, res) => {
             requiredName = problem.functionName || 'solution';
             wrapCodeFn = wrapJavaCode;
         }
-        const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
         const results = [];
         let totalExecutionTime = 0;
         let totalMemoryUsed = 0;

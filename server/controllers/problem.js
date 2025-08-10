@@ -5,7 +5,7 @@ import ErrorResponse from '../utils/errorResponse.js';
 import mongoose from 'mongoose';
 import axios from 'axios';
 import 'dotenv/config';
-const COMPILER_URL = process.env.COMPILER_URL || 'http://localhost:8000/compile';
+const COMPILER_URL =  process.env.COMPILER_URL;
 export const createProblem = async (req, res) => {
     const { title, description, difficulty, categories, timeLimit, memoryLimit, publicTestCases, hiddenTestCases } = req.body;
 

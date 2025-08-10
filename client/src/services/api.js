@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE =   import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const getAuthToken = () => {
   return localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -181,7 +181,8 @@ export const getSolvedProblems = async (page = 1, limit = 10) => {
 
 export const getProblem = async (problemId) => {
   try {
-    const res = await axios.get(`${API_BASE}/problems/${problemId}`);
+    const authInstance = createAuthInstance();
+    const res = await authInstance.get(`/problems/${problemId}`);
     return res.data;
   } catch (err) {
     throw new Error(
@@ -232,7 +233,8 @@ export const runCustomTest = async (problemId, code, language, customInput) => {
 
 export const forgotPassword = async (email) => {
   try {
-    const res = await axios.post(`${API_BASE}/auth/forgotpassword`, { email });
+    const authInstance = createAuthInstance();
+    const res = await authInstance.post(`/auth/forgotpassword`, { email });
     return res.data;
   } catch (err) {
     throw new Error(
@@ -245,7 +247,8 @@ export const forgotPassword = async (email) => {
 
 export const resetPassword = async (token, password) => {
   try {
-    const res = await axios.put(`${API_BASE}/auth/resetpassword/${token}`, { 
+    const authInstance = createAuthInstance();
+    const res = await authInstance.put(`/auth/resetpassword/${token}`, { 
       token, 
       password 
     });

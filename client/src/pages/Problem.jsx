@@ -188,7 +188,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
   useEffect(() => {
     const fetchHintCount = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+        const API_BASE = import.meta.env.VITE_API_URL;
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         const res = await axios.get(`${API_BASE}/ai/hint-count/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -204,7 +204,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
   useEffect(() => {
     const fetchHints = async () => {
       try {
-        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+        const API_BASE = import.meta.env.VITE_API_URL;
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         const res = await axios.get(`${API_BASE}/ai/hints/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -277,13 +277,48 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
       setSubmitting(false);
     }
   };
-
+//for http copy paste
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    toast.success('Code copied to clipboard!');
-    setTimeout(() => setCopied(false), 2000);
-  };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(code)
+        .then(() => {
+          setCopied(true);
+          toast.success('Code copied to clipboard!');
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch(() => fallbackCopyTextToClipboard(code));
+    } else {
+      fallbackCopyTextToClipboard(code);
+    }
+  }; 
+  function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.top = 0;
+    textArea.style.left = 0;
+    textArea.style.width = "2em";
+    textArea.style.height = "2em";
+    textArea.style.padding = 0;
+    textArea.style.border = "none";
+    textArea.style.outline = "none";
+    textArea.style.boxShadow = "none";
+    textArea.style.background = "transparent";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+  
+    try {
+      const successful = document.execCommand('copy');
+      setCopied(true);
+      toast.success('Code copied to clipboard!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error('Failed to copy code');
+    }
+  
+    document.body.removeChild(textArea);
+  }
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty.toLowerCase()) {
@@ -293,7 +328,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
       default: return '#6b7280';
     }
   };
-
+// console.log("current status",submissionResult.status);
   const getStatusIcon = (status) => {
     switch (status) {
       case 'accepted':
@@ -331,7 +366,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
     setHintLoading(true);
     setHintError(null);
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+      const API_BASE =  import.meta.env.VITE_API_URL;
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       const res = await axios.post(`${API_BASE}/ai/hint`, {
         problemId: id,
@@ -352,7 +387,11 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
         setHintError(res.data.message || 'Failed to get hint.');
       }
     } catch (err) {
-      setHintError(err.response?.data?.message || 'Failed to get hint.');
+      if (err.response && err.response.status === 401) {
+        toast.error('Please log in to get hints!');
+      } else {
+        setHintError(err.response?.data?.message || 'Failed to get hint.');
+      }
     } finally {
       setHintLoading(false);
     }
@@ -361,7 +400,7 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
   const handleViewHints = async () => {
     if (hints.length === 0) {
       try {
-        const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+        const API_BASE = import.meta.env.VITE_API_URL;
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
         const res = await axios.get(`${API_BASE}/ai/hints/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -709,65 +748,83 @@ int* solution(int* nums, int numsSize, int target, int* returnSize) {
               </div>
             )}
 
-            {activeTab === 'submission_result' && submissionResult && (
-              <div className="submission-result-container">
-                <div className="result-header">
-                  <h3>Submission Result</h3>
-                </div>
-                <div className="result-content">
-                  <div className="result-status">
-                    {getStatusIcon(submissionResult.status)}
-                    <span 
-                      className="status-text"
-                      style={{ color: getStatusColor(submissionResult.status) }}
-                    >
-                      {(submissionResult.status ? submissionResult.status.replace('_', ' ').toUpperCase() : (submissionResult.message || 'UNKNOWN ERROR'))}
-                    </span>
+            {activeTab === 'submission_result' && submissionResult && (() => {
+              const status = submissionResult?.status || submissionResult?.data?.status;
+              const failedCase = submissionResult?.failedCase || submissionResult?.data?.failedCase;
+              return (
+                <div className="submission-result-container">
+                  <div className="result-header">
+                    <h3>Submission Result</h3>
                   </div>
-                  
-                  <div className="result-metrics">
-                    <div className="metric-item">
-                      <FaClock />
-                      <span>Time: {submissionResult.executionTime}ms</span>
+                  <div className="result-content">
+                    <div className="result-status">
+                      {getStatusIcon(status)}
+                      <span 
+                        className="status-text"
+                        style={{ color: getStatusColor(status) }}
+                      >
+                        {status === 'wrong_answer'
+                          ? 'WRONG ANSWER'
+                          : (status
+                              ? status.replace('_', ' ').toUpperCase()
+                              : (submissionResult.message || 'UNKNOWN ERROR'))}
+                      </span>
                     </div>
-                    <div className="metric-item">
-                      <FaMemory />
-                      <span>Memory: {submissionResult.memoryUsed}MB</span>
-                    </div>
-                    <div className="metric-item">
-                      <FaTrophy />
-                      <span>Test Cases: {submissionResult.testCasesPassed}/{submissionResult.totalTestCases}</span>
-                    </div>
-                  </div>
-
-                  {submissionResult.status === 'accepted' && (
-                    <div className="success-message">
-                      <FaLightbulb />
-                      <span>Great job! Your solution passed all test cases!</span>
-                    </div>
-                  )}
-
-                  {submissionResult.errorMessage && (
-                    <div className="error-message">
-                      <FaExclamationTriangle />
-                      <div className="error-content">
-                        <span className="error-title">Error Details:</span>
-                        <pre className="error-text">{submissionResult.errorMessage}</pre>
+                    
+                    <div className="result-metrics">
+                      <div className="metric-item">
+                        <FaClock />
+                        <span>Time: {submissionResult.executionTime}ms</span>
+                      </div>
+                      <div className="metric-item">
+                        <FaMemory />
+                        <span>Memory: {submissionResult.memoryUsed}MB</span>
+                      </div>
+                      <div className="metric-item">
+                        <FaTrophy />
+                        <span>Test Cases: {submissionResult.testCasesPassed}/{submissionResult.totalTestCases}</span>
                       </div>
                     </div>
-                  )}
 
-                  {submissionResult.failedCase && (
-                    <div className="failed-case-feedback">
-                      <h4>Failed on Test Case #{submissionResult.failedCase.index}</h4>
-                      <div><b>Input:</b> <pre>{submissionResult.failedCase.input}</pre></div>
-                      <div><b>Your Output:</b> <pre>{submissionResult.failedCase.output}</pre></div>
-                      <div><b>Expected Output:</b> <pre>{submissionResult.failedCase.expected}</pre></div>
-                    </div>
-                  )}
+                    {status === 'accepted' && (
+                      <div className="success-message">
+                        <FaLightbulb />
+                        <span>Great job! Your solution passed all test cases!</span>
+                      </div>
+                    )}
+
+                    {status === 'wrong_answer' && failedCase && (
+                      <div className="failed-case-feedback">
+                        <h4 style={{ color: '#ef4444' }}>Failed on Test Case #{failedCase.index}</h4>
+                        <div><b>Input:</b> <pre>{failedCase.input}</pre></div>
+                        <div><b>Your Output:</b> <pre>{failedCase.output}</pre></div>
+                        <div><b>Expected Output:</b> <pre>{failedCase.expected}</pre></div>
+                      </div>
+                    )}
+
+                    {submissionResult.errorMessage && (
+                      <div className="error-message">
+                        <FaExclamationTriangle />
+                        <div className="error-content">
+                          <span className="error-title">Error Details:</span>
+                          <pre className="error-text">{submissionResult.errorMessage}</pre>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Keep the generic failed case for other statuses */}
+                    {status !== 'wrong_answer' && failedCase && (
+                      <div className="failed-case-feedback">
+                        <h4>Failed on Test Case #{failedCase.index}</h4>
+                        <div><b>Input:</b> <pre>{failedCase.input}</pre></div>
+                        <div><b>Your Output:</b> <pre>{failedCase.output}</pre></div>
+                        <div><b>Expected Output:</b> <pre>{failedCase.expected}</pre></div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
 
           </div>
